@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { trackGameEvent } from '@/analytics/tracker';
+import { loadOnboardingDismissed, saveOnboardingDismissed } from '@/app/bootstrap/onboardingPreference';
 import type { GameState } from '@/entities/company';
 import type { ProcessMode } from '@/entities/process';
 import { advanceGameState } from '@/game-core/engine/reducer';
@@ -15,6 +17,7 @@ interface AppStoreState {
   hydrationSource: HydrationSource;
   isHydrated: boolean;
   lastSavedAt: number | null;
+  onboardingDismissed: boolean;
   setBridge: (bridge: PlatformBridge) => void;
   setPlatform: (snapshot: PlatformSnapshot) => void;
   setGameState: (state: GameState, source?: HydrationSource) => void;
@@ -23,6 +26,7 @@ interface AppStoreState {
   adoptProcessMode: (mode: ProcessMode, now: number) => void;
   hireTeamRole: (roleId: 'designer' | 'pm' | 'architect' | 'qa', now: number) => void;
   upgradeScale: (now: number) => void;
+  dismissOnboarding: () => void;
 }
 
 const defaultPlatform: PlatformSnapshot = {
@@ -42,6 +46,7 @@ export const useAppStore = create<AppStoreState>((set) => ({
   hydrationSource: 'fresh-start',
   isHydrated: false,
   lastSavedAt: null,
+  onboardingDismissed: loadOnboardingDismissed(),
   setBridge: (bridge) => set({ bridge }),
   setPlatform: (platform) => set({ platform }),
   setGameState: (gameState, source = 'fresh-start') =>
@@ -68,23 +73,55 @@ export const useAppStore = create<AppStoreState>((set) => ({
     }),
   markSaved: (lastSavedAt) => set({ lastSavedAt }),
   adoptProcessMode: (mode, now) =>
-    set((state) =>
-      canChangeProcessMode(state.gameState, mode)
-        ? {
-            gameState: changeProcessMode(state.gameState, mode, now),
-          }
-        : state,
-    ),
+    set((state) => {
+      if (!canChangeProcessMode(state.gameState, mode)) {
+        return state;
+      }
+
+      const nextState = changeProcessMode(state.gameState, mode, now);
+
+      if (nextState !== state.gameState) {
+        trackGameEvent('change_process_mode', { mode });
+      }
+
+      return {
+        gameState: nextState,
+      };
+    }),
   hireTeamRole: (roleId, now) =>
-    set((state) => ({
-      gameState: hireRole(state.gameState, roleId, now),
-    })),
+    set((state) => {
+      const nextState = hireRole(state.gameState, roleId, now);
+
+      if (nextState !== state.gameState) {
+        trackGameEvent('hire_role', { roleId });
+      }
+
+      return {
+        gameState: nextState,
+      };
+    }),
   upgradeScale: (now) =>
     set((state) =>
       canUpgradeCompanyScale(state.gameState)
         ? {
-            gameState: upgradeCompanyScale(state.gameState, now),
+            gameState: (() => {
+              const nextState = upgradeCompanyScale(state.gameState, now);
+              trackGameEvent('upgrade_company_scale', { scaleId: nextState.companyScaleId });
+              return nextState;
+            })(),
           }
         : state,
     ),
+  dismissOnboarding: () =>
+    set((state) => {
+      saveOnboardingDismissed(true);
+      trackGameEvent('dismiss_onboarding', {
+        releases: state.gameState.stats.releases,
+        employeeCount: state.gameState.employeeCount,
+      });
+
+      return {
+        onboardingDismissed: true,
+      };
+    }),
 }));

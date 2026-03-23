@@ -526,6 +526,17 @@ select {
   line-height: 1.5;
 }
 
+.floating-hint__cta {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  color: var(--bg-top);
+  font-weight: 700;
+  background: linear-gradient(180deg, var(--accent-soft), var(--accent));
+}
+
 .scale-card {
   margin-bottom: 12px;
 }

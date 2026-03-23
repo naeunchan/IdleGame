@@ -39,6 +39,7 @@ export function DashboardScreen() {
   const scaleProgress = getScaleProgress(gameState);
   const progressPercent = Math.min(100, metrics.projectRatio * 100);
   const founderBreed = breedDefinitions.find((breed) => breed.id === gameState.founder.breedId);
+  const currentProcess = processModeDefinitions.find((mode) => mode.id === gameState.currentProcess);
 
   const formatSigned = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
   const formatNumber = (value: number) =>
@@ -99,14 +100,18 @@ export function DashboardScreen() {
       </section>
 
       <section className="stage-shell">
-        <PixiStage />
+        <PixiStage
+          employeeCount={gameState.employeeCount}
+          processLabel={currentProcess?.name ?? '애자일'}
+          scaleLabel={scaleProgress.currentScale.name}
+        />
         <div className="stage-overlay">
           <div className="stage-overlay__header">
             <div>
               <span className="label">활성 프로젝트</span>
               <strong>{gameState.activeProject.name}</strong>
             </div>
-            <span className="stage-badge">{gameState.currentProcess}</span>
+            <span className="stage-badge">{currentProcess?.name ?? gameState.currentProcess}</span>
           </div>
           <div className="progress-rail">
             <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
