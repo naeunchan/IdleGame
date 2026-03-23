@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 
 import type { GameState } from '@/entities/company';
+import type { ProcessMode } from '@/entities/process';
 import { advanceGameState } from '@/game-core/engine/reducer';
 import { createInitialGameState } from '@/game-core/engine/createInitialGameState';
+import { canChangeProcessMode, canUpgradeCompanyScale, changeProcessMode, hireRole, upgradeCompanyScale } from '@/game-core/engine/management';
 import type { HydrationSource } from '@/persistence/storage';
 import type { PlatformBridge, PlatformSnapshot } from '@/shared/types/platform';
 
@@ -18,6 +20,9 @@ interface AppStoreState {
   setGameState: (state: GameState, source?: HydrationSource) => void;
   tickGame: (now: number) => void;
   markSaved: (savedAt: number) => void;
+  adoptProcessMode: (mode: ProcessMode, now: number) => void;
+  hireTeamRole: (roleId: 'designer' | 'pm' | 'architect' | 'qa', now: number) => void;
+  upgradeScale: (now: number) => void;
 }
 
 const defaultPlatform: PlatformSnapshot = {
@@ -62,4 +67,24 @@ export const useAppStore = create<AppStoreState>((set) => ({
       };
     }),
   markSaved: (lastSavedAt) => set({ lastSavedAt }),
+  adoptProcessMode: (mode, now) =>
+    set((state) =>
+      canChangeProcessMode(state.gameState, mode)
+        ? {
+            gameState: changeProcessMode(state.gameState, mode, now),
+          }
+        : state,
+    ),
+  hireTeamRole: (roleId, now) =>
+    set((state) => ({
+      gameState: hireRole(state.gameState, roleId, now),
+    })),
+  upgradeScale: (now) =>
+    set((state) =>
+      canUpgradeCompanyScale(state.gameState)
+        ? {
+            gameState: upgradeCompanyScale(state.gameState, now),
+          }
+        : state,
+    ),
 }));

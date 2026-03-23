@@ -10,6 +10,7 @@ export function createInitialGameState(now = Date.now()): GameState {
       role: 'founder',
       stage: 'puppy',
     },
+    teamMembers: [],
     resources: {
       code: 12,
       focus: 100,
@@ -17,6 +18,7 @@ export function createInitialGameState(now = Date.now()): GameState {
       reputation: 0,
     },
     employeeCount: 1,
+    companyScaleId: 'garage',
     currentProcess: 'agile',
     activeProject: getNextProject(1),
     stats: {

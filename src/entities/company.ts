@@ -1,4 +1,6 @@
 import type { BreedId } from '@/entities/dog';
+import type { RoleId } from '@/entities/job';
+import type { CompanyScaleId } from '@/entities/companyScale';
 import type { ProcessMode } from '@/entities/process';
 import type { ProjectState } from '@/entities/project';
 
@@ -23,11 +25,22 @@ export interface FounderProfile {
   stage: 'puppy';
 }
 
+export interface TeamMember {
+  id: string;
+  name: string;
+  breedId: BreedId;
+  roleId: Exclude<RoleId, 'founder'>;
+  stage: 'adult';
+  hiredAt: number;
+}
+
 export interface GameState {
   companyName: string;
   founder: FounderProfile;
+  teamMembers: TeamMember[];
   resources: Resources;
   employeeCount: number;
+  companyScaleId: CompanyScaleId;
   currentProcess: ProcessMode;
   activeProject: ProjectState;
   stats: SimulationStats;
