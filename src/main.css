@@ -180,6 +180,40 @@ select {
   min-height: 288px;
 }
 
+.stage-overlay {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(8, 5, 16, 0.48);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stage-overlay strong {
+  display: block;
+  margin-top: 6px;
+}
+
+.stage-overlay small {
+  color: var(--sub-ink);
+}
+
+.progress-rail {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.progress-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--sky), var(--accent));
+}
+
 .grid-panels {
   display: grid;
   gap: 16px;
@@ -302,4 +336,3 @@ select {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-

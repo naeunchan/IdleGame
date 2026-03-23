@@ -1,9 +1,8 @@
 export function OnboardingHint() {
   return (
     <aside className="floating-hint">
-      <strong>다음 PR</strong>
-      <p>이 화면 위에 실제 방치형 생산 루프, 고용, SDLC 선택, 저장 로직을 차례로 얹습니다.</p>
+      <strong>자동 저장 가동 중</strong>
+      <p>앱을 닫아도 창업 개발견의 생산과 마지막 시점이 저장되고, 다시 열면 오프라인 진행이 복구됩니다.</p>
     </aside>
   );
 }
-
