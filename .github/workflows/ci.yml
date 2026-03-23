@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+      - codex/**
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.9.2 --activate
+
+      - name: Install dependencies
+        run: corepack yarn install --immutable
+
+      - name: Lint
+        run: corepack yarn lint
+
+      - name: Typecheck
+        run: corepack yarn typecheck
+
+      - name: Test
+        run: corepack yarn test
+
+      - name: Build
+        run: corepack yarn build
