@@ -38,6 +38,7 @@ export function DashboardScreen() {
   const processCards = getProcessCards(gameState);
   const scaleProgress = getScaleProgress(gameState);
   const progressPercent = Math.min(100, metrics.projectRatio * 100);
+  const founderBreed = breedDefinitions.find((breed) => breed.id === gameState.founder.breedId);
 
   const formatSigned = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
   const formatNumber = (value: number) =>
@@ -45,9 +46,9 @@ export function DashboardScreen() {
 
   return (
     <main className="app-shell">
-      <section className="hero-card">
+      <section className="hero-card hero-card--command">
         <div className="eyebrow-row">
-          <span className="eyebrow">Apps in Toss Game Shell</span>
+          <span className="eyebrow">개발견 키우기</span>
           <span className="status-pill">{platform.isPortrait ? 'Portrait First' : 'Landscape'}</span>
         </div>
 
@@ -55,16 +56,34 @@ export function DashboardScreen() {
           <div>
             <h1>개발견 키우기</h1>
             <p>
-              새끼 개발견 한 마리로 코드와 집중력을 굴리기 시작했고, 이 브랜치부터 실제 방치형 생산과
-              저장 복구가 돌아갑니다.
+              새끼 개발견 한 마리에서 시작해 코드, 팀, 프로세스를 차례로 넓혀 가는 방치형 회사
+              시뮬레이션입니다.
             </p>
+          </div>
+
+          <div className="command-strip">
+            <div className="command-pill">
+              <span>Founder</span>
+              <strong>{gameState.founder.name}</strong>
+              <small>{founderBreed?.name}</small>
+            </div>
+            <div className="command-pill">
+              <span>Scale</span>
+              <strong>{scaleProgress.currentScale.name}</strong>
+              <small>{gameState.employeeCount} staff</small>
+            </div>
+            <div className="command-pill command-pill--accent">
+              <span>Save</span>
+              <strong>{hydrationSource === 'save-recovered' ? 'Recovered' : 'Fresh'}</strong>
+              <small>{lastSavedAt ? new Date(lastSavedAt).toLocaleTimeString('ko-KR') : 'Auto'}</small>
+            </div>
           </div>
 
           <div className="hero-stats">
             <div>
               <span className="label">창업자</span>
               <strong>{gameState.founder.name}</strong>
-              <small>{breedDefinitions.find((breed) => breed.id === gameState.founder.breedId)?.name} / 새끼 견</small>
+              <small>{founderBreed?.name} / 새끼 견</small>
             </div>
             <div>
               <span className="label">프로세스</span>
@@ -82,16 +101,22 @@ export function DashboardScreen() {
       <section className="stage-shell">
         <PixiStage />
         <div className="stage-overlay">
-          <div>
-            <span className="label">활성 프로젝트</span>
-            <strong>{gameState.activeProject.name}</strong>
+          <div className="stage-overlay__header">
+            <div>
+              <span className="label">활성 프로젝트</span>
+              <strong>{gameState.activeProject.name}</strong>
+            </div>
+            <span className="stage-badge">{gameState.currentProcess}</span>
           </div>
           <div className="progress-rail">
             <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
           </div>
-          <small>
-            {formatNumber(gameState.activeProject.progress)} / {formatNumber(gameState.activeProject.target)} code
-          </small>
+          <div className="stage-overlay__footer">
+            <small>
+              {formatNumber(gameState.activeProject.progress)} / {formatNumber(gameState.activeProject.target)} code
+            </small>
+            <small>{formatSigned(metrics.codePerSecond)} code / sec</small>
+          </div>
         </div>
       </section>
 
@@ -212,41 +237,54 @@ export function DashboardScreen() {
               </button>
             ) : null}
           </div>
-          <div className="button-grid">
-            {processCards.map((processMode) => (
-              <button
-                className={`action-card ${processMode.isActive ? 'action-card--active' : ''}`}
-                disabled={!processMode.canChange}
-                key={processMode.id}
-                onClick={() => adoptProcessMode(processMode.id, Date.now())}
-                type="button"
-              >
-                <span>{processMode.name}</span>
-                <strong>{processMode.bonusLabel}</strong>
-                <small>{processMode.summary}</small>
-              </button>
-            ))}
+          <div className="management-section">
+            <div className="management-section__header">
+              <span className="label">프로세스 전환</span>
+              <small>한 번에 하나만 활성화됩니다</small>
+            </div>
+            <div className="button-grid">
+              {processCards.map((processMode) => (
+                <button
+                  className={`action-card ${processMode.isActive ? 'action-card--active' : ''}`}
+                  disabled={!processMode.canChange}
+                  key={processMode.id}
+                  onClick={() => adoptProcessMode(processMode.id, Date.now())}
+                  type="button"
+                >
+                  <span>{processMode.name}</span>
+                  <strong>{processMode.bonusLabel}</strong>
+                  <small>{processMode.summary}</small>
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="button-grid">
-            {hireCards.map((role) => (
-              <button
-                className={`action-card ${role.isHired ? 'action-card--owned' : ''}`}
-                disabled={!role.canHire}
-                key={role.id}
-                onClick={() => hireTeamRole(role.id, Date.now())}
-                type="button"
-              >
-                <span>{role.name}</span>
-                <strong>
-                  {role.hireCost.cash}원 / {role.hireCost.code} code
-                </strong>
-                <small>
-                  {role.isHired
-                    ? '고용 완료'
-                    : `${role.recommendedBreedId} 추천 / ${role.unlockNotes}`}
-                </small>
-              </button>
-            ))}
+
+          <div className="management-section">
+            <div className="management-section__header">
+              <span className="label">첫 팀 채용</span>
+              <small>견종 성향에 맞는 역할을 추천합니다</small>
+            </div>
+            <div className="button-grid">
+              {hireCards.map((role) => (
+                <button
+                  className={`action-card ${role.isHired ? 'action-card--owned' : ''}`}
+                  disabled={!role.canHire}
+                  key={role.id}
+                  onClick={() => hireTeamRole(role.id, Date.now())}
+                  type="button"
+                >
+                  <span>{role.name}</span>
+                  <strong>
+                    {role.hireCost.cash}원 / {role.hireCost.code} code
+                  </strong>
+                  <small>
+                    {role.isHired
+                      ? '고용 완료'
+                      : `${role.recommendedBreedId} 추천 / ${role.unlockNotes}`}
+                  </small>
+                </button>
+              ))}
+            </div>
           </div>
         </article>
 

@@ -1,8 +1,21 @@
+import { useAppStore } from '@/app/providers/useAppStore';
+
 export function OnboardingHint() {
+  const hydrationSource = useAppStore((state) => state.hydrationSource);
+
+  if (hydrationSource !== 'fresh-start') {
+    return null;
+  }
+
   return (
-    <aside className="floating-hint">
-      <strong>자동 저장 가동 중</strong>
-      <p>앱을 닫아도 창업 개발견의 생산과 마지막 시점이 저장되고, 다시 열면 오프라인 진행이 복구됩니다.</p>
+    <aside className="floating-hint" role="note" aria-label="첫 세션 안내">
+      <div className="floating-hint__eyebrow">Guide</div>
+      <strong>첫 세션은 위에서 아래로 읽으면 됩니다.</strong>
+      <ol>
+        <li>프로세스를 먼저 고르고, 현재 회사 운영 스타일을 정합니다.</li>
+        <li>규모를 키운 뒤 첫 역할을 고용해 팀 버프를 엽니다.</li>
+        <li>저장 카드가 바뀌는지 보고, 앱을 닫아도 진행이 남는지 체감합니다.</li>
+      </ol>
     </aside>
   );
 }
