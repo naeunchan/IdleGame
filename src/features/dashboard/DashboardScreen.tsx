@@ -1,7 +1,7 @@
 import { breedDefinitions } from '@/content/breeds/definitions';
 import { roleDefinitions } from '@/content/jobs/definitions';
 import { processModeDefinitions } from '@/content/processModes/definitions';
-import { PixiStage } from '@/game-renderer/pixi/PixiStage';
+import { PhaserStage } from '@/game-renderer/phaser/PhaserStage';
 import { useAppStore } from '@/app/providers/useAppStore';
 import { getBuildMeta } from '@/app/bootstrap/getBuildMeta';
 import { OnboardingHint } from '@/features/onboarding/OnboardingHint';
@@ -153,7 +153,7 @@ export function DashboardScreen() {
             <span>멍발자 오두막</span>
           </div>
         </div>
-        <PixiStage />
+        <PhaserStage />
       </section>
 
       <OnboardingHint />
