@@ -90,6 +90,10 @@ select {
     linear-gradient(180deg, rgba(55, 28, 87, 0.94), rgba(31, 18, 54, 0.94));
 }
 
+.hero-card--command {
+  padding-bottom: 18px;
+}
+
 .eyebrow-row,
 .panel-header,
 .hero-stats,
@@ -145,6 +149,53 @@ select {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.command-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.command-pill {
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(12, 8, 24, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.command-pill--accent {
+  background:
+    linear-gradient(180deg, rgba(255, 143, 63, 0.18), rgba(115, 217, 255, 0.08)),
+    rgba(12, 8, 24, 0.42);
+  border-color: rgba(255, 143, 63, 0.24);
+}
+
+.command-pill span,
+.command-pill small,
+.floating-hint__eyebrow,
+.management-section__header small,
+.stage-badge,
+.first-session-guide__badge {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.command-pill strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 16px;
+}
+
+.command-pill small,
+.management-section__header small {
+  margin-top: 6px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--sub-ink);
+}
+
 .hero-stats > div,
 .footer-strip > div {
   padding: 14px;
@@ -190,6 +241,14 @@ select {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.stage-overlay__header,
+.stage-overlay__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
 .stage-overlay strong {
   display: block;
   margin-top: 6px;
@@ -212,6 +271,14 @@ select {
   inset: 0 auto 0 0;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--sky), var(--accent));
+}
+
+.stage-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 143, 63, 0.12);
+  border: 1px solid rgba(255, 143, 63, 0.24);
+  color: var(--ink);
 }
 
 .grid-panels {
@@ -308,6 +375,19 @@ select {
   margin-top: 16px;
 }
 
+.management-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.management-section__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
 .roster-card,
 .scale-card,
 .action-card {
@@ -400,19 +480,61 @@ select {
 
 .floating-hint {
   position: fixed;
-  left: 50%;
+  right: calc(16px + var(--safe-right));
   bottom: calc(16px + var(--safe-bottom));
-  width: min(calc(100% - 32px), 420px);
-  transform: translateX(-50%);
+  width: min(calc(100% - 32px), 360px);
   padding: 14px 16px;
-  background: rgba(16, 10, 30, 0.92);
+  background:
+    radial-gradient(circle at top right, rgba(115, 217, 255, 0.12), transparent 28%),
+    rgba(16, 10, 30, 0.92);
   backdrop-filter: blur(18px);
+}
+
+.first-session-guide {
+  padding: 16px;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 143, 63, 0.16), transparent 30%),
+    rgba(15, 9, 27, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.first-session-guide strong {
+  display: block;
+  margin-top: 10px;
+  font-family: 'Pixelify Sans', sans-serif;
+  font-size: 20px;
+}
+
+.first-session-guide ol {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: var(--sub-ink);
+  line-height: 1.6;
 }
 
 .floating-hint strong {
   display: block;
   font-family: 'Pixelify Sans', sans-serif;
   color: var(--sky);
+}
+
+.floating-hint ol {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--sub-ink);
+  line-height: 1.5;
+}
+
+.floating-hint__cta {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  color: var(--bg-top);
+  font-weight: 700;
+  background: linear-gradient(180deg, var(--accent-soft), var(--accent));
 }
 
 .scale-card {
@@ -426,5 +548,23 @@ select {
 
   .button-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 719px) {
+  .command-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stage-overlay__header,
+  .stage-overlay__footer,
+  .management-section__header,
+  .footer-strip {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
