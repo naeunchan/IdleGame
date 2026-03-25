@@ -1,4 +1,5 @@
 import type { GameState } from '@/entities/company';
+import { getNextProject } from '@/game-core/engine/formulas';
 
 export function createInitialGameState(now = Date.now()): GameState {
   return {
@@ -17,7 +18,13 @@ export function createInitialGameState(now = Date.now()): GameState {
     },
     employeeCount: 1,
     currentProcess: 'agile',
+    activeProject: getNextProject(1),
+    stats: {
+      releases: 0,
+      totalCodeProduced: 12,
+      totalCashEarned: 30,
+      totalOfflineMs: 0,
+    },
     lastUpdatedAt: now,
   };
 }
-

@@ -4,6 +4,7 @@ import { processModeDefinitions } from '@/content/processModes/definitions';
 import { PixiStage } from '@/game-renderer/pixi/PixiStage';
 import { useAppStore } from '@/app/providers/useAppStore';
 import { getBuildMeta } from '@/app/bootstrap/getBuildMeta';
+import { getDashboardMetrics } from '@/game-core/selectors/dashboard';
 import { formatInsets } from '@/shared/utils/format';
 
 const prStack = [
@@ -27,7 +28,15 @@ const prStack = [
 export function DashboardScreen() {
   const platform = useAppStore((state) => state.platform);
   const gameState = useAppStore((state) => state.gameState);
+  const hydrationSource = useAppStore((state) => state.hydrationSource);
+  const lastSavedAt = useAppStore((state) => state.lastSavedAt);
   const buildMeta = getBuildMeta();
+  const metrics = getDashboardMetrics(gameState);
+  const progressPercent = Math.min(100, metrics.projectRatio * 100);
+
+  const formatSigned = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
+  const formatNumber = (value: number) =>
+    new Intl.NumberFormat('ko-KR', { maximumFractionDigits: value > 100 ? 0 : 1 }).format(value);
 
   return (
     <main className="app-shell">
@@ -41,8 +50,8 @@ export function DashboardScreen() {
           <div>
             <h1>개발견 키우기</h1>
             <p>
-              새끼 개발견 한 마리로 시작해서 팀을 꾸리고, SDLC를 선택하고, 회사를 키우는 방치형
-              시뮬레이션의 기반 PR입니다.
+              새끼 개발견 한 마리로 코드와 집중력을 굴리기 시작했고, 이 브랜치부터 실제 방치형 생산과
+              저장 복구가 돌아갑니다.
             </p>
           </div>
 
@@ -50,12 +59,12 @@ export function DashboardScreen() {
             <div>
               <span className="label">창업자</span>
               <strong>{gameState.founder.name}</strong>
-              <small>{breedDefinitions.find((breed) => breed.id === gameState.founder.breedId)?.name}</small>
+              <small>{breedDefinitions.find((breed) => breed.id === gameState.founder.breedId)?.name} / 새끼 견</small>
             </div>
             <div>
               <span className="label">프로세스</span>
               <strong>{processModeDefinitions.find((mode) => mode.id === gameState.currentProcess)?.name}</strong>
-              <small>기본값 설정 완료</small>
+              <small>{hydrationSource === 'save-recovered' ? '저장 복구 완료' : '기본 루프 가동 중'}</small>
             </div>
           </div>
         </div>
@@ -63,6 +72,18 @@ export function DashboardScreen() {
 
       <section className="stage-shell">
         <PixiStage />
+        <div className="stage-overlay">
+          <div>
+            <span className="label">활성 프로젝트</span>
+            <strong>{gameState.activeProject.name}</strong>
+          </div>
+          <div className="progress-rail">
+            <div className="progress-bar" style={{ width: `${progressPercent}%` }} />
+          </div>
+          <small>
+            {formatNumber(gameState.activeProject.progress)} / {formatNumber(gameState.activeProject.target)} code
+          </small>
+        </div>
       </section>
 
       <section className="grid-panels">
@@ -95,6 +116,39 @@ export function DashboardScreen() {
 
         <article className="panel">
           <div className="panel-header">
+            <h2>시뮬레이션 루프</h2>
+            <span>idle online</span>
+          </div>
+          <ul className="metric-list">
+            <li>
+              <span>Code</span>
+              <strong>{formatNumber(gameState.resources.code)}</strong>
+            </li>
+            <li>
+              <span>Cash</span>
+              <strong>{formatNumber(gameState.resources.cash)}원</strong>
+            </li>
+            <li>
+              <span>Reputation</span>
+              <strong>{formatNumber(gameState.resources.reputation)}</strong>
+            </li>
+            <li>
+              <span>Focus</span>
+              <strong>{formatNumber(gameState.resources.focus)}</strong>
+            </li>
+            <li>
+              <span>Code / sec</span>
+              <strong>{formatSigned(metrics.codePerSecond)}</strong>
+            </li>
+            <li>
+              <span>Focus / min</span>
+              <strong>{formatSigned(metrics.focusTrendPerMinute)}</strong>
+            </li>
+          </ul>
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
             <h2>콘텐츠 베이스</h2>
             <span>{breedDefinitions.length} breeds</span>
           </div>
@@ -117,9 +171,27 @@ export function DashboardScreen() {
 
         <article className="panel">
           <div className="panel-header">
-            <h2>PR 스택</h2>
+            <h2>진행 메타</h2>
             <span>{prStack.length} branches</span>
           </div>
+          <ul className="metric-list">
+            <li>
+              <span>Releases</span>
+              <strong>{gameState.stats.releases}</strong>
+            </li>
+            <li>
+              <span>Offline recovered</span>
+              <strong>{formatNumber(gameState.stats.totalOfflineMs / 60000)}분</strong>
+            </li>
+            <li>
+              <span>Last save</span>
+              <strong>{lastSavedAt ? new Date(lastSavedAt).toLocaleTimeString('ko-KR') : 'autosave pending'}</strong>
+            </li>
+            <li>
+              <span>Build stack</span>
+              <strong>{prStack[1]?.title}</strong>
+            </li>
+          </ul>
           <div className="timeline">
             {prStack.map((item) => (
               <div className={`timeline-item timeline-item--${item.status}`} key={item.branch}>
@@ -134,7 +206,7 @@ export function DashboardScreen() {
       <section className="footer-strip">
         <div>
           <span className="label">Launch state</span>
-          <strong>Foundational shell complete</strong>
+          <strong>Founder simulation online</strong>
         </div>
         <div>
           <span className="label">Build mode</span>
@@ -144,4 +216,3 @@ export function DashboardScreen() {
     </main>
   );
 }
-
