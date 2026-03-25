@@ -31,6 +31,23 @@ export function DashboardScreen() {
   const buildMeta = getBuildMeta();
   const founderBreed = breedDefinitions.find((breed) => breed.id === gameState.founder.breedId);
   const currentProcess = processModeDefinitions.find((mode) => mode.id === gameState.currentProcess);
+  const dailyJournal = [
+    {
+      label: '오늘의 작물',
+      value: '프로토타입 씨앗',
+      note: '작은 기능을 심고 천천히 키우는 날',
+    },
+    {
+      label: '다음 목표',
+      value: '첫 팀원 맞이',
+      note: '작업실이 외롭지 않도록 첫 동료를 준비합니다',
+    },
+    {
+      label: '마을 기분',
+      value: '잔잔함',
+      note: '무리 없이 손에 익는 리듬을 먼저 만듭니다',
+    },
+  ];
 
   const resourceCards = [
     {
@@ -65,21 +82,32 @@ export function DashboardScreen() {
     <main className="app-shell">
       <section className="hero-card">
         <div className="eyebrow-row">
-          <span className="eyebrow">Spring Studio Diary</span>
-          <span className="status-pill">{platform.isPortrait ? '햇살 세로 모드' : '들판 가로 모드'}</span>
+          <span className="eyebrow">Pixel Farm Ledger</span>
+          <span className="status-pill">{platform.isPortrait ? '도트 세로 모드' : '도트 가로 모드'}</span>
         </div>
 
         <div className="hero-copy">
           <div className="hero-copy__lead">
             <div className="season-banner">
               <span>봄 1일차</span>
+              <span>맑음</span>
               <span>작업실에 볕이 잘 듭니다</span>
             </div>
             <h1>개발견 키우기</h1>
             <p>
-              창가 옆 작은 작업실에서 시작해, 성실한 견종 동료들과 함께 포근한 회사로 자라나는
-              방치형 시뮬레이션입니다.
+              농장처럼 천천히 가꿔 가는 개발 작업실을 목표로, 새끼 개발견 한 마리와 작은 기능 씨앗부터
+              키워 나가는 도트 감성 방치형 시뮬레이션입니다.
             </p>
+          </div>
+
+          <div className="journal-strip">
+            {dailyJournal.map((entry) => (
+              <div className="journal-card" key={entry.label}>
+                <span>{entry.label}</span>
+                <strong>{entry.value}</strong>
+                <small>{entry.note}</small>
+              </div>
+            ))}
           </div>
 
           <div className="hero-badge-grid">
@@ -116,9 +144,14 @@ export function DashboardScreen() {
 
       <section className="stage-shell">
         <div className="stage-shell__copy">
-          <span className="label">창가 작업실</span>
-          <strong>햇살이 드는 아침 루틴</strong>
-          <small>첫 기능을 다듬는 멍발자와 포근한 오두막형 오피스 콘셉트입니다.</small>
+          <span className="label">농장 겸 작업실</span>
+          <strong>오두막 앞 개발 밭</strong>
+          <small>작업대, 밭고랑, 작은 집, 산책로가 함께 보이는 Stardew Valley 풍의 도트 장면입니다.</small>
+          <div className="stage-shell__tags">
+            <span>나무 울타리</span>
+            <span>개발 씨앗</span>
+            <span>멍발자 오두막</span>
+          </div>
         </div>
         <PixiStage />
       </section>
@@ -128,7 +161,10 @@ export function DashboardScreen() {
       <section className="grid-panels">
         <article className="panel">
           <div className="panel-header">
-            <h2>오늘의 작업실</h2>
+            <div>
+              <span className="panel-kicker">Farm Status</span>
+              <h2>오늘의 작업실</h2>
+            </div>
             <span>{platform.isTossWebView ? 'Toss WebView 안' : '브라우저 미리보기'}</span>
           </div>
           <ul className="metric-list">
@@ -159,7 +195,10 @@ export function DashboardScreen() {
 
         <article className="panel">
           <div className="panel-header">
-            <h2>견종 도감</h2>
+            <div>
+              <span className="panel-kicker">Dog Almanac</span>
+              <h2>견종 도감</h2>
+            </div>
             <span>{breedDefinitions.length} breeds / {roleDefinitions.length} roles</span>
           </div>
           <div className="breed-grid">
@@ -188,7 +227,10 @@ export function DashboardScreen() {
 
         <article className="panel">
           <div className="panel-header">
-            <h2>성장 달력</h2>
+            <div>
+              <span className="panel-kicker">Season Roadmap</span>
+              <h2>성장 달력</h2>
+            </div>
             <span>{prStack.length} seasons</span>
           </div>
           <ul className="metric-list metric-list--compact">

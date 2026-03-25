@@ -71,208 +71,243 @@ export function PixiStage() {
         scene = new Container();
         app.stage.addChild(scene);
 
-        const room = new Graphics()
-          .roundRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT, 28)
-          .fill({ color: 0xf7eccd })
-          .stroke({ color: 0x9d7149, width: 4 });
-        scene.addChild(room);
+        const frame = new Graphics()
+          .roundRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT, 12)
+          .fill({ color: 0xf3ddb0 })
+          .stroke({ color: 0x6a4324, width: 4 });
+        scene.addChild(frame);
 
-        const skyPanel = new Graphics()
-          .roundRect(18, 18, 324, 102, 18)
-          .fill({ color: 0x94cbf8 });
-        scene.addChild(skyPanel);
+        const sky = new Graphics()
+          .roundRect(8, 8, 344, 116, 8)
+          .fill({ color: 0x7ec4ee });
+        scene.addChild(sky);
 
-        const sun = new Graphics().circle(294, 42, 18).fill({ color: 0xf7de8f });
-        scene.addChild(sun);
+        const haze = new Graphics()
+          .rect(8, 82, 344, 42)
+          .fill({ color: 0xcfe8a1, alpha: 0.5 });
+        scene.addChild(haze);
 
-        const sunGlow = new Graphics().circle(294, 42, 28).fill({ color: 0xf7de8f, alpha: 0.18 });
-        scene.addChild(sunGlow);
+        const sunGlow = new Graphics().circle(294, 34, 26).fill({ color: 0xf7df8a, alpha: 0.22 });
+        const sun = new Graphics().circle(294, 34, 14).fill({ color: 0xf3d575 });
+        scene.addChild(sunGlow, sun);
 
-        const hillBack = new Graphics()
-          .poly([18, 102, 74, 74, 124, 90, 178, 62, 232, 82, 288, 56, 342, 102])
-          .fill({ color: 0x94bc7a });
-        scene.addChild(hillBack);
+        const cloudLeft = new Graphics()
+          .roundRect(34, 28, 44, 18, 8)
+          .fill({ color: 0xf5fbff })
+          .roundRect(48, 18, 32, 18, 8)
+          .fill({ color: 0xf5fbff });
+        const cloudRight = new Graphics()
+          .roundRect(264, 58, 52, 18, 8)
+          .fill({ color: 0xf5fbff })
+          .roundRect(282, 48, 28, 18, 8)
+          .fill({ color: 0xf5fbff });
+        scene.addChild(cloudLeft, cloudRight);
 
-        const hillFront = new Graphics()
-          .poly([18, 118, 84, 88, 144, 102, 202, 84, 268, 108, 342, 88, 342, 120, 18, 120])
-          .fill({ color: 0x74a55d });
-        scene.addChild(hillFront);
+        const mountainBack = new Graphics()
+          .poly([8, 106, 58, 64, 92, 78, 132, 50, 184, 88, 232, 58, 282, 84, 352, 46, 352, 124, 8, 124])
+          .fill({ color: 0x7ca770 });
+        const mountainFront = new Graphics()
+          .poly([8, 120, 64, 84, 108, 98, 168, 72, 214, 104, 258, 78, 312, 102, 352, 88, 352, 128, 8, 128])
+          .fill({ color: 0x5f8b45 });
+        scene.addChild(mountainBack, mountainFront);
 
-        const curtainLeft = new Graphics()
-          .roundRect(24, 22, 34, 88, 10)
-          .fill({ color: 0xe7a55a })
-          .stroke({ color: 0xb56d32, width: 2 });
-        const curtainRight = new Graphics()
-          .roundRect(302, 22, 34, 88, 10)
-          .fill({ color: 0xe7a55a })
-          .stroke({ color: 0xb56d32, width: 2 });
-        scene.addChild(curtainLeft, curtainRight);
+        const grass = new Graphics()
+          .rect(8, 124, 344, 50)
+          .fill({ color: 0x7ea955 });
+        const dirt = new Graphics()
+          .rect(8, 174, 344, 58)
+          .fill({ color: 0x9d6a3c });
+        scene.addChild(grass, dirt);
 
-        const windowFrame = new Graphics()
-          .roundRect(54, 28, 132, 82, 14)
-          .fill({ color: 0xf8f2e2, alpha: 0.35 })
-          .stroke({ color: 0x9d7149, width: 4 });
-        const windowCross = new Graphics()
-          .rect(118, 28, 4, 82)
-          .fill({ color: 0x9d7149 })
-          .rect(54, 67, 132, 4)
-          .fill({ color: 0x9d7149 });
-        scene.addChild(windowFrame, windowCross);
+        const path = new Graphics()
+          .poly([154, 232, 210, 232, 220, 174, 146, 174])
+          .fill({ color: 0xc7965d });
+        scene.addChild(path);
 
-        const wallBand = new Graphics().rect(18, 120, 324, 28).fill({ color: 0xf1dfbb });
-        const floor = new Graphics().rect(18, 148, 324, 74).fill({ color: 0xc18a57 });
-        scene.addChild(wallBand, floor);
+        const farmhouseShadow = new Graphics()
+          .roundRect(198, 96, 110, 82, 6)
+          .fill({ color: 0x7b4928, alpha: 0.25 });
+        scene.addChild(farmhouseShadow);
 
-        const rug = new Graphics()
-          .roundRect(186, 180, 118, 32, 10)
-          .fill({ color: 0xd38a51 })
-          .stroke({ color: 0x9d5d31, width: 3 });
-        scene.addChild(rug);
+        const farmhouseRoof = new Graphics()
+          .poly([198, 108, 252, 68, 308, 108])
+          .fill({ color: 0xb65f31 })
+          .stroke({ color: 0x73401f, width: 3 });
+        const farmhouseBody = new Graphics()
+          .roundRect(208, 104, 90, 62, 4)
+          .fill({ color: 0xe4c58c })
+          .stroke({ color: 0x8b5a2f, width: 3 });
+        const farmhouseDoor = new Graphics()
+          .roundRect(242, 130, 18, 36, 4)
+          .fill({ color: 0x7c4a25 })
+          .stroke({ color: 0x5c3319, width: 2 });
+        const farmhouseWindow = new Graphics()
+          .roundRect(218, 122, 18, 18, 4)
+          .fill({ color: 0x9fd6f0 })
+          .stroke({ color: 0x7b5228, width: 2 })
+          .roundRect(270, 122, 18, 18, 4)
+          .fill({ color: 0x9fd6f0 })
+          .stroke({ color: 0x7b5228, width: 2 });
+        scene.addChild(farmhouseRoof, farmhouseBody, farmhouseDoor, farmhouseWindow);
 
-        const desk = new Graphics()
-          .roundRect(168, 132, 132, 26, 8)
-          .fill({ color: 0x9e6e44 })
-          .stroke({ color: 0x71472a, width: 3 });
-        const deskLegs = new Graphics()
-          .rect(180, 158, 8, 34)
-          .fill({ color: 0x71472a })
-          .rect(280, 158, 8, 34)
-          .fill({ color: 0x71472a });
-        scene.addChild(desk, deskLegs);
+        const fence = new Graphics()
+          .rect(16, 168, 94, 6)
+          .fill({ color: 0x7a4a27 })
+          .rect(16, 184, 94, 6)
+          .fill({ color: 0x7a4a27 })
+          .rect(22, 164, 6, 32)
+          .fill({ color: 0x9a683d })
+          .rect(52, 164, 6, 32)
+          .fill({ color: 0x9a683d })
+          .rect(82, 164, 6, 32)
+          .fill({ color: 0x9a683d });
+        scene.addChild(fence);
 
-        const notebook = new Graphics()
-          .roundRect(194, 122, 42, 24, 5)
-          .fill({ color: 0x89b77a })
-          .stroke({ color: 0x57753d, width: 2 });
-        const pencil = new Graphics()
-          .roundRect(229, 130, 24, 4, 2)
-          .fill({ color: 0xf1c770 });
-        scene.addChild(notebook, pencil);
+        const cropBeds = new Graphics()
+          .rect(20, 176, 102, 42)
+          .fill({ color: 0x7f5329 })
+          .rect(22, 178, 30, 18)
+          .fill({ color: 0x915f2d })
+          .rect(56, 178, 30, 18)
+          .fill({ color: 0x915f2d })
+          .rect(90, 178, 30, 18)
+          .fill({ color: 0x915f2d })
+          .rect(22, 198, 30, 18)
+          .fill({ color: 0x915f2d })
+          .rect(56, 198, 30, 18)
+          .fill({ color: 0x915f2d })
+          .rect(90, 198, 30, 18)
+          .fill({ color: 0x915f2d });
+        scene.addChild(cropBeds);
 
-        const mug = new Graphics()
-          .roundRect(266, 121, 14, 18, 5)
-          .fill({ color: 0xf3ead5 })
-          .stroke({ color: 0x9d7149, width: 2 });
-        scene.addChild(mug);
+        const sprouts = new Graphics();
+        const sproutPositions = [
+          [34, 189],
+          [68, 189],
+          [102, 189],
+          [34, 209],
+          [68, 209],
+          [102, 209],
+        ];
+        for (const [x, y] of sproutPositions) {
+          sprouts
+            .rect(x, y, 4, 8)
+            .fill({ color: 0x5b8d3c })
+            .rect(x - 4, y - 2, 6, 4)
+            .fill({ color: 0x84b65d })
+            .rect(x + 2, y - 3, 6, 4)
+            .fill({ color: 0x84b65d });
+        }
+        scene.addChild(sprouts);
 
-        const steamLeft = new Graphics().circle(0, 0, 4).fill({ color: 0xffffff, alpha: 0.42 });
-        const steamRight = new Graphics().circle(0, 0, 3).fill({ color: 0xffffff, alpha: 0.3 });
-        steamLeft.x = 270;
-        steamLeft.y = 116;
-        steamRight.x = 278;
-        steamRight.y = 110;
-        scene.addChild(steamLeft, steamRight);
-
-        const plantPot = new Graphics()
-          .roundRect(46, 150, 28, 22, 6)
-          .fill({ color: 0xb66d43 })
-          .stroke({ color: 0x754228, width: 2 });
-        const plantLeafLeft = new Graphics()
-          .poly([0, 0, -10, -22, 2, -18])
-          .fill({ color: 0x6f9d57 });
-        const plantLeafRight = new Graphics()
-          .poly([0, 0, 12, -24, 4, -18])
-          .fill({ color: 0x7aaa64 });
-        plantLeafLeft.x = 58;
-        plantLeafLeft.y = 150;
-        plantLeafRight.x = 62;
-        plantLeafRight.y = 150;
-        scene.addChild(plantPot, plantLeafLeft, plantLeafRight);
-
-        const puppyBody = new Graphics()
-          .roundRect(212, 134, 54, 34, 12)
-          .fill({ color: 0xf3c886 })
-          .stroke({ color: 0x8f6035, width: 3 });
-        const puppyHead = new Graphics()
-          .roundRect(224, 114, 36, 28, 12)
-          .fill({ color: 0xf7d399 })
-          .stroke({ color: 0x8f6035, width: 3 });
-        const earLeft = new Graphics()
-          .poly([230, 118, 238, 100, 246, 118])
-          .fill({ color: 0x8f6035 });
-        const earRight = new Graphics()
-          .poly([244, 118, 252, 100, 260, 118])
-          .fill({ color: 0x8f6035 });
-        const tail = new Graphics()
-          .poly([0, 0, 18, -10, 18, 2])
-          .fill({ color: 0x8f6035 });
-        tail.x = 262;
-        tail.y = 153;
-        const nose = new Graphics().circle(242, 129, 2.5).fill({ color: 0x5f3d22 });
-        const blushLeft = new Graphics().circle(234, 130, 3).fill({ color: 0xe9a38d, alpha: 0.55 });
-        const blushRight = new Graphics().circle(250, 130, 3).fill({ color: 0xe9a38d, alpha: 0.55 });
+        const workTable = new Graphics()
+          .roundRect(132, 152, 58, 16, 4)
+          .fill({ color: 0x83512d })
+          .stroke({ color: 0x5d381e, width: 2 })
+          .rect(138, 168, 6, 18)
+          .fill({ color: 0x5d381e })
+          .rect(178, 168, 6, 18)
+          .fill({ color: 0x5d381e });
         const laptop = new Graphics()
-          .roundRect(204, 144, 26, 16, 4)
-          .fill({ color: 0x7fba9e })
-          .stroke({ color: 0x4a7e68, width: 2 });
-        scene.addChild(
-          puppyBody,
-          puppyHead,
-          earLeft,
-          earRight,
-          tail,
-          nose,
-          blushLeft,
-          blushRight,
-          laptop,
-        );
+          .roundRect(144, 142, 24, 14, 4)
+          .fill({ color: 0x7fbba3 })
+          .stroke({ color: 0x4f7f69, width: 2 });
+        const coffee = new Graphics()
+          .roundRect(172, 146, 10, 12, 4)
+          .fill({ color: 0xf6ecdb })
+          .stroke({ color: 0x94633b, width: 2 });
+        scene.addChild(workTable, laptop, coffee);
 
-        const wallFrame = new Graphics()
-          .roundRect(228, 34, 84, 44, 12)
-          .fill({ color: 0xf8f2e2 })
-          .stroke({ color: 0x9d7149, width: 3 });
-        const wallFrameArt = new Graphics()
-          .poly([244, 62, 260, 48, 274, 58, 292, 42, 302, 62])
-          .fill({ color: 0x8bb777 })
-          .circle(252, 46, 6)
-          .fill({ color: 0xf2cb79 });
-        scene.addChild(wallFrame, wallFrameArt);
+        const boardPost = new Graphics()
+          .rect(122, 126, 8, 44)
+          .fill({ color: 0x734721 });
+        const boardSign = new Graphics()
+          .roundRect(96, 110, 56, 22, 6)
+          .fill({ color: 0xe9c682 })
+          .stroke({ color: 0x8e5b31, width: 3 });
+        scene.addChild(boardPost, boardSign);
 
-        const title = new Text({
-          text: 'SPRING BUILD',
+        const boardText = new Text({
+          text: 'CODE',
           style: new TextStyle({
             fontFamily: 'Pixelify Sans',
-            fontSize: 24,
-            fill: appTheme.colors.accent,
+            fontSize: 14,
+            fill: appTheme.colors.ink,
+          }),
+        });
+        boardText.x = 107;
+        boardText.y = 113;
+        scene.addChild(boardText);
+
+        const puppyBody = new Graphics()
+          .roundRect(150, 170, 34, 24, 8)
+          .fill({ color: 0xf0c88d })
+          .stroke({ color: 0x855430, width: 3 });
+        const puppyHead = new Graphics()
+          .roundRect(158, 154, 22, 18, 8)
+          .fill({ color: 0xf5d59f })
+          .stroke({ color: 0x855430, width: 3 });
+        const hatBrim = new Graphics()
+          .roundRect(154, 148, 30, 6, 3)
+          .fill({ color: 0xbd8b4c });
+        const hatTop = new Graphics()
+          .roundRect(160, 142, 18, 8, 3)
+          .fill({ color: 0xd4a763 });
+        const earLeft = new Graphics()
+          .poly([160, 158, 164, 146, 168, 158])
+          .fill({ color: 0x855430 });
+        const earRight = new Graphics()
+          .poly([170, 158, 174, 146, 178, 158])
+          .fill({ color: 0x855430 });
+        const tail = new Graphics()
+          .poly([0, 0, 14, -8, 14, 2])
+          .fill({ color: 0x855430 });
+        tail.x = 182;
+        tail.y = 186;
+        const nose = new Graphics().circle(168, 166, 2).fill({ color: 0x5d371f });
+        scene.addChild(puppyBody, puppyHead, hatBrim, hatTop, earLeft, earRight, tail, nose);
+
+        const title = new Text({
+          text: 'DOT FARM BUILD',
+          style: new TextStyle({
+            fontFamily: 'Pixelify Sans',
+            fontSize: 22,
+            fill: appTheme.colors.accentSoft,
             stroke: {
-              color: 0xf8f2e2,
-              width: 2,
+              color: 0x734622,
+              width: 3,
             },
           }),
         });
-        title.x = 26;
-        title.y = 184;
+        title.x = 16;
+        title.y = 14;
         scene.addChild(title);
 
         const subtitle = new Text({
-          text: 'Cozy starter studio',
+          text: 'Cozy dev field',
           style: new TextStyle({
             fontFamily: 'IBM Plex Sans KR',
-            fontSize: 13,
-            fill: appTheme.colors.subInk,
+            fontSize: 12,
+            fill: appTheme.colors.panelStrong,
           }),
         });
-        subtitle.x = 28;
-        subtitle.y = 212;
+        subtitle.x = 18;
+        subtitle.y = 40;
         scene.addChild(subtitle);
 
         let elapsed = 0;
         const tick = () => {
           elapsed += 0.03;
-          puppyHead.y = 114 + Math.sin(elapsed * 1.3) * 1.4;
-          puppyBody.y = 134 + Math.sin(elapsed * 1.3) * 1.2;
-          earLeft.rotation = Math.sin(elapsed) * 0.05;
-          earRight.rotation = -Math.sin(elapsed) * 0.05;
-          tail.rotation = -0.18 + Math.sin(elapsed * 2.3) * 0.14;
-          sunGlow.alpha = 0.16 + Math.sin(elapsed * 1.1) * 0.06;
-          steamLeft.y = 116 - Math.sin(elapsed * 1.8) * 3;
-          steamRight.y = 110 - Math.sin(elapsed * 1.8 + 0.5) * 2.5;
-          steamLeft.alpha = 0.28 + Math.sin(elapsed * 1.6) * 0.08;
-          steamRight.alpha = 0.22 + Math.sin(elapsed * 1.6 + 0.5) * 0.07;
-          plantLeafLeft.rotation = Math.sin(elapsed * 1.2) * 0.07;
-          plantLeafRight.rotation = -Math.sin(elapsed * 1.2) * 0.06;
-          curtainLeft.x = 24 + Math.sin(elapsed * 0.7) * 1.6;
-          curtainRight.x = 302 - Math.sin(elapsed * 0.7) * 1.6;
+          cloudLeft.x = Math.sin(elapsed * 0.35) * 8;
+          cloudRight.x = -Math.sin(elapsed * 0.3) * 6;
+          sunGlow.alpha = 0.2 + Math.sin(elapsed * 0.8) * 0.05;
+          puppyHead.y = 154 + Math.sin(elapsed * 1.6) * 1.5;
+          puppyBody.y = 170 + Math.sin(elapsed * 1.6) * 1.2;
+          earLeft.rotation = Math.sin(elapsed * 1.4) * 0.04;
+          earRight.rotation = -Math.sin(elapsed * 1.4) * 0.04;
+          tail.rotation = -0.12 + Math.sin(elapsed * 2.6) * 0.2;
+          laptop.tint = Math.sin(elapsed * 2.2) > 0 ? 0x7fbba3 : 0x9dd3b4;
+          coffee.y = 146 - Math.sin(elapsed * 1.7) * 0.6;
         };
 
         app.ticker.add(tick);
