@@ -1,12 +1,27 @@
 import type { BreedDefinition } from '@/entities/dog';
 
-export const breedDefinitions: BreedDefinition[] = [
+export const breedDefinitions = [
   {
     id: 'border-collie',
     name: '보더콜리',
     title: '집중 개발견',
     specialty: '생산성',
+    specialtyRoleId: 'architect',
+    affinity: 'productivity',
     passive: '혼자서도 빠르게 기능을 찍어냅니다.',
+    progressionHint: '작은 팀에서 속도를 끌어올리는 생산 라인의 핵심입니다.',
+    roleMatches: [
+      { roleId: 'architect', weight: 0.85, note: '구조를 빠르게 정리해 산출량을 끌어올립니다.' },
+      { roleId: 'designer', weight: 0.65, note: '시각 결과물 반복 작업과 잘 맞습니다.' },
+      { roleId: 'pm', weight: 0.4, note: '작업 전환이 적은 일정 관리에 강합니다.' },
+    ],
+    modifierProfile: {
+      productivityMultiplier: 1.14,
+      focusMultiplier: 1.06,
+      teamMultiplier: 0.98,
+      qualityMultiplier: 1.04,
+      stabilityMultiplier: 1.02,
+    },
     focusBonus: 6,
     productivityBonus: 14,
     teamBuffBonus: 0,
@@ -17,7 +32,22 @@ export const breedDefinitions: BreedDefinition[] = [
     name: '시바',
     title: '몰입 개발견',
     specialty: '집중력',
+    specialtyRoleId: 'pm',
+    affinity: 'focus',
     passive: '컨텍스트 스위칭 피해를 덜 받습니다.',
+    progressionHint: '요구사항이 자주 바뀌어도 주도권을 놓치지 않습니다.',
+    roleMatches: [
+      { roleId: 'pm', weight: 0.9, note: '우선순위 조정과 집중 유지에 강합니다.' },
+      { roleId: 'architect', weight: 0.62, note: '설계 유지와 반복 점검에 적합합니다.' },
+      { roleId: 'qa', weight: 0.5, note: '이상 징후를 오래 관찰하는 역할과 맞습니다.' },
+    ],
+    modifierProfile: {
+      productivityMultiplier: 1.08,
+      focusMultiplier: 1.16,
+      teamMultiplier: 1.0,
+      qualityMultiplier: 1.02,
+      stabilityMultiplier: 1.08,
+    },
     focusBonus: 16,
     productivityBonus: 8,
     teamBuffBonus: 0,
@@ -28,7 +58,22 @@ export const breedDefinitions: BreedDefinition[] = [
     name: '골든리트리버',
     title: '팀 케어견',
     specialty: '팀 버프',
+    specialtyRoleId: 'designer',
+    affinity: 'team',
     passive: '팀 사기를 올려 전체 효율을 밀어줍니다.',
+    progressionHint: '동료가 늘어날수록 진가가 커지는 협업 중심 견종입니다.',
+    roleMatches: [
+      { roleId: 'designer', weight: 0.88, note: '팀 분위기와 결과물 완성도를 함께 올립니다.' },
+      { roleId: 'pm', weight: 0.86, note: '조율과 커뮤니케이션의 중심축입니다.' },
+      { roleId: 'architect', weight: 0.54, note: '중간 규모 팀의 연결 고리 역할에 맞습니다.' },
+    ],
+    modifierProfile: {
+      productivityMultiplier: 1.06,
+      focusMultiplier: 1.08,
+      teamMultiplier: 1.15,
+      qualityMultiplier: 1.06,
+      stabilityMultiplier: 1.1,
+    },
     focusBonus: 8,
     productivityBonus: 6,
     teamBuffBonus: 15,
@@ -39,11 +84,25 @@ export const breedDefinitions: BreedDefinition[] = [
     name: '코기',
     title: 'QA 견',
     specialty: '품질',
+    specialtyRoleId: 'qa',
+    affinity: 'quality',
     passive: '릴리즈 직전 버그를 잘 잡아냅니다.',
+    progressionHint: '출시 직전 사고를 줄여 장기 운영에서 힘을 발휘합니다.',
+    roleMatches: [
+      { roleId: 'qa', weight: 0.96, note: '검증과 회귀 테스트에 매우 강합니다.' },
+      { roleId: 'architect', weight: 0.7, note: '품질 기준을 설계하는 역할과 잘 맞습니다.' },
+      { roleId: 'designer', weight: 0.42, note: '디테일 다듬기와 시각 검수에도 어울립니다.' },
+    ],
+    modifierProfile: {
+      productivityMultiplier: 0.96,
+      focusMultiplier: 1.04,
+      teamMultiplier: 1.02,
+      qualityMultiplier: 1.2,
+      stabilityMultiplier: 1.14,
+    },
     focusBonus: 4,
     productivityBonus: 4,
     teamBuffBonus: 4,
     qualityBonus: 18,
   },
-];
-
+] satisfies BreedDefinition[];

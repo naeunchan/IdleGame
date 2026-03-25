@@ -1,0 +1,108 @@
+import type { CompanyScaleDefinition } from '@/entities/companyScale';
+
+export const companyScaleDefinitions = [
+  {
+    id: 'garage',
+    name: '개발차고',
+    summary: '1인 개발견이 자리 잡는 시작 단계입니다.',
+    unlockRequirement: {
+      companyStage: 1,
+      releases: 0,
+      reputation: 0,
+      employeeCount: 1,
+    },
+    upgradeCost: {
+      cash: 0,
+      code: 0,
+      reputation: 0,
+    },
+    headcountCap: 1,
+    hireSlots: 0,
+    modifierProfile: {
+      productivityMultiplier: 1,
+      focusMultiplier: 1,
+      teamMultiplier: 1,
+      qualityMultiplier: 1,
+      stabilityMultiplier: 1,
+    },
+    unlockedRoles: ['founder'],
+  },
+  {
+    id: 'small-studio',
+    name: '소규모 스튜디오',
+    summary: '첫 고용이 열리고 제품 감각이 붙는 단계입니다.',
+    unlockRequirement: {
+      companyStage: 2,
+      releases: 1,
+      reputation: 1,
+      employeeCount: 2,
+    },
+    upgradeCost: {
+      cash: 96,
+      code: 14,
+      reputation: 0,
+    },
+    headcountCap: 2,
+    hireSlots: 1,
+    modifierProfile: {
+      productivityMultiplier: 1.04,
+      focusMultiplier: 1.04,
+      teamMultiplier: 1.02,
+      qualityMultiplier: 1.02,
+      stabilityMultiplier: 1.04,
+    },
+    unlockedRoles: ['designer', 'qa'],
+  },
+  {
+    id: 'product-team',
+    name: '프로덕트 팀',
+    summary: 'PM과 아키텍트가 합류하는 전환점입니다.',
+    unlockRequirement: {
+      companyStage: 3,
+      releases: 2,
+      reputation: 3,
+      employeeCount: 3,
+    },
+    upgradeCost: {
+      cash: 168,
+      code: 22,
+      reputation: 1,
+    },
+    headcountCap: 4,
+    hireSlots: 2,
+    modifierProfile: {
+      productivityMultiplier: 1.1,
+      focusMultiplier: 1.06,
+      teamMultiplier: 1.08,
+      qualityMultiplier: 1.06,
+      stabilityMultiplier: 1.1,
+    },
+    unlockedRoles: ['pm', 'architect'],
+  },
+  {
+    id: 'scale-up',
+    name: '스케일업 조직',
+    summary: '프로세스와 팀 버프가 함께 작동하는 확장 단계입니다.',
+    unlockRequirement: {
+      companyStage: 4,
+      releases: 4,
+      reputation: 6,
+      employeeCount: 4,
+    },
+    upgradeCost: {
+      cash: 264,
+      code: 34,
+      reputation: 2,
+    },
+    headcountCap: 6,
+    hireSlots: 4,
+    modifierProfile: {
+      productivityMultiplier: 1.16,
+      focusMultiplier: 1.08,
+      teamMultiplier: 1.12,
+      qualityMultiplier: 1.1,
+      stabilityMultiplier: 1.14,
+    },
+    unlockedRoles: ['designer', 'pm', 'architect', 'qa'],
+  },
+] satisfies CompanyScaleDefinition[];

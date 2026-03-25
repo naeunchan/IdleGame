@@ -1,27 +1,26 @@
 import { breedDefinitions } from '@/content/breeds/definitions';
-import { roleDefinitions } from '@/content/jobs/definitions';
 import { processModeDefinitions } from '@/content/processModes/definitions';
 import { PixiStage } from '@/game-renderer/pixi/PixiStage';
 import { useAppStore } from '@/app/providers/useAppStore';
 import { getBuildMeta } from '@/app/bootstrap/getBuildMeta';
-import { getDashboardMetrics } from '@/game-core/selectors/dashboard';
+import { getDashboardMetrics, getHireCards, getProcessCards, getScaleProgress } from '@/game-core/selectors/dashboard';
 import { formatInsets } from '@/shared/utils/format';
 
 const prStack = [
   {
     branch: 'codex/foundation-webview-shell',
     title: 'Game shell and platform seam',
-    status: 'active',
+    status: 'completed',
   },
   {
     branch: 'codex/core-loop-simulation',
     title: 'Deterministic idle simulation',
-    status: 'queued',
+    status: 'completed',
   },
   {
     branch: 'codex/team-growth-and-sdlc',
     title: 'Hiring, traits, and process modes',
-    status: 'queued',
+    status: 'active',
   },
 ];
 
@@ -30,8 +29,14 @@ export function DashboardScreen() {
   const gameState = useAppStore((state) => state.gameState);
   const hydrationSource = useAppStore((state) => state.hydrationSource);
   const lastSavedAt = useAppStore((state) => state.lastSavedAt);
+  const adoptProcessMode = useAppStore((state) => state.adoptProcessMode);
+  const hireTeamRole = useAppStore((state) => state.hireTeamRole);
+  const upgradeScale = useAppStore((state) => state.upgradeScale);
   const buildMeta = getBuildMeta();
   const metrics = getDashboardMetrics(gameState);
+  const hireCards = getHireCards(gameState);
+  const processCards = getProcessCards(gameState);
+  const scaleProgress = getScaleProgress(gameState);
   const progressPercent = Math.min(100, metrics.projectRatio * 100);
 
   const formatSigned = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
@@ -64,7 +69,11 @@ export function DashboardScreen() {
             <div>
               <span className="label">프로세스</span>
               <strong>{processModeDefinitions.find((mode) => mode.id === gameState.currentProcess)?.name}</strong>
-              <small>{hydrationSource === 'save-recovered' ? '저장 복구 완료' : '기본 루프 가동 중'}</small>
+              <small>
+                {hydrationSource === 'save-recovered'
+                  ? '저장 복구 완료'
+                  : `${scaleProgress.currentScale.name} / ${gameState.employeeCount}명 운영 중`}
+              </small>
             </div>
           </div>
         </div>
@@ -150,21 +159,93 @@ export function DashboardScreen() {
         <article className="panel">
           <div className="panel-header">
             <h2>콘텐츠 베이스</h2>
-            <span>{breedDefinitions.length} breeds</span>
+            <span>{breedDefinitions.length} breeds / {gameState.employeeCount} staff</span>
           </div>
           <div className="tag-cloud">
             {breedDefinitions.map((breed) => (
               <div className="tag-card" key={breed.id}>
                 <span>{breed.name}</span>
                 <strong>{breed.specialty}</strong>
+                <small>{breed.specialtyRoleId}</small>
               </div>
             ))}
           </div>
-          <div className="tag-cloud compact">
-            {roleDefinitions.map((role) => (
-              <div className="tag-card compact" key={role.id}>
-                <span>{role.name}</span>
+          <div className="roster-list">
+            <div className="roster-card">
+              <span>Founder</span>
+              <strong>{gameState.founder.name}</strong>
+              <small>{breedDefinitions.find((breed) => breed.id === gameState.founder.breedId)?.name}</small>
+            </div>
+            {gameState.teamMembers.map((member) => (
+              <div className="roster-card" key={member.id}>
+                <span>{member.roleId}</span>
+                <strong>{member.name}</strong>
+                <small>{breedDefinitions.find((breed) => breed.id === member.breedId)?.name}</small>
               </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
+            <h2>조직 확장</h2>
+            <span>team growth</span>
+          </div>
+          <div className="scale-card">
+            <span>{scaleProgress.currentScale.name}</span>
+            <strong>{scaleProgress.currentScale.summary}</strong>
+            <small>
+              headcount {scaleProgress.currentScale.headcountCap} / slots {scaleProgress.currentScale.hireSlots}
+            </small>
+            {scaleProgress.nextScale ? (
+              <button
+                className={`action-card ${scaleProgress.canUpgrade ? 'action-card--active' : ''}`}
+                disabled={!scaleProgress.canUpgrade}
+                onClick={() => upgradeScale(Date.now())}
+                type="button"
+              >
+                <span>다음 단계</span>
+                <strong>{scaleProgress.nextScale.name}</strong>
+                <small>
+                  비용 {scaleProgress.nextScale.upgradeCost.cash}원 / {scaleProgress.nextScale.upgradeCost.code} code
+                </small>
+              </button>
+            ) : null}
+          </div>
+          <div className="button-grid">
+            {processCards.map((processMode) => (
+              <button
+                className={`action-card ${processMode.isActive ? 'action-card--active' : ''}`}
+                disabled={!processMode.canChange}
+                key={processMode.id}
+                onClick={() => adoptProcessMode(processMode.id, Date.now())}
+                type="button"
+              >
+                <span>{processMode.name}</span>
+                <strong>{processMode.bonusLabel}</strong>
+                <small>{processMode.summary}</small>
+              </button>
+            ))}
+          </div>
+          <div className="button-grid">
+            {hireCards.map((role) => (
+              <button
+                className={`action-card ${role.isHired ? 'action-card--owned' : ''}`}
+                disabled={!role.canHire}
+                key={role.id}
+                onClick={() => hireTeamRole(role.id, Date.now())}
+                type="button"
+              >
+                <span>{role.name}</span>
+                <strong>
+                  {role.hireCost.cash}원 / {role.hireCost.code} code
+                </strong>
+                <small>
+                  {role.isHired
+                    ? '고용 완료'
+                    : `${role.recommendedBreedId} 추천 / ${role.unlockNotes}`}
+                </small>
+              </button>
             ))}
           </div>
         </article>
@@ -189,7 +270,7 @@ export function DashboardScreen() {
             </li>
             <li>
               <span>Build stack</span>
-              <strong>{prStack[1]?.title}</strong>
+              <strong>{prStack[2]?.title}</strong>
             </li>
           </ul>
           <div className="timeline">
@@ -206,7 +287,7 @@ export function DashboardScreen() {
       <section className="footer-strip">
         <div>
           <span className="label">Launch state</span>
-          <strong>Founder simulation online</strong>
+          <strong>Team growth live</strong>
         </div>
         <div>
           <span className="label">Build mode</span>

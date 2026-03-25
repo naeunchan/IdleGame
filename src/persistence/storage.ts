@@ -12,6 +12,38 @@ export interface HydratedGameState {
   source: HydrationSource;
 }
 
+function normalizeState(candidate: Partial<GameState>, now: number): GameState {
+  const fallback = createInitialGameState(now);
+
+  const teamMembers = Array.isArray(candidate.teamMembers) ? candidate.teamMembers : fallback.teamMembers;
+
+  return {
+    ...fallback,
+    ...candidate,
+    founder: {
+      ...fallback.founder,
+      ...candidate.founder,
+    },
+    teamMembers,
+    resources: {
+      ...fallback.resources,
+      ...candidate.resources,
+    },
+    activeProject: {
+      ...fallback.activeProject,
+      ...candidate.activeProject,
+    },
+    stats: {
+      ...fallback.stats,
+      ...candidate.stats,
+    },
+    employeeCount:
+      typeof candidate.employeeCount === 'number' ? candidate.employeeCount : 1 + teamMembers.length,
+    companyScaleId: candidate.companyScaleId ?? fallback.companyScaleId,
+    lastUpdatedAt: candidate.lastUpdatedAt ?? now,
+  };
+}
+
 export function persistGameState(state: GameState, savedAt = Date.now()) {
   if (typeof window === 'undefined') {
     return;
@@ -48,7 +80,7 @@ export function loadGameState(now = Date.now()): HydratedGameState {
     }
 
     return {
-      state: applyOfflineProgress(parsed.state, now),
+      state: applyOfflineProgress(normalizeState(parsed.state, parsed.savedAt), now),
       source: 'save-recovered',
     };
   } catch {
@@ -58,4 +90,3 @@ export function loadGameState(now = Date.now()): HydratedGameState {
     };
   }
 }
-

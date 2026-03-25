@@ -1,35 +1,134 @@
 import type { RoleDefinition } from '@/entities/job';
 
-export const roleDefinitions: RoleDefinition[] = [
+export const roleDefinitions = [
   {
     id: 'founder',
     name: '창업 개발견',
     lane: 'core',
     summary: '초기 코드를 책임지고 회사를 시작합니다.',
+    unlockRequirement: {
+      companyStage: 1,
+      releases: 0,
+      reputation: 0,
+      employeeCount: 1,
+    },
+    hireCost: {
+      cash: 0,
+      code: 0,
+      reputation: 0,
+    },
+    modifierProfile: {
+      productivityMultiplier: 1,
+      focusMultiplier: 1,
+      teamMultiplier: 1,
+      qualityMultiplier: 1,
+      stabilityMultiplier: 1,
+    },
+    recommendedBreeds: ['border-collie', 'shiba'],
+    unlockNotes: '초기 플레이어의 시작점입니다.',
   },
   {
     id: 'designer',
     name: '디자인 견',
     lane: 'product',
     summary: '화면과 감성을 책임집니다.',
+    unlockRequirement: {
+      companyStage: 1,
+      releases: 0,
+      reputation: 0,
+      employeeCount: 1,
+    },
+    hireCost: {
+      cash: 72,
+      code: 8,
+      reputation: 0,
+    },
+    modifierProfile: {
+      productivityMultiplier: 0.98,
+      focusMultiplier: 1.04,
+      teamMultiplier: 1.02,
+      qualityMultiplier: 1.12,
+      stabilityMultiplier: 1.03,
+    },
+    recommendedBreeds: ['golden-retriever', 'border-collie'],
+    unlockNotes: '첫 확장 단계에서 시각 완성도를 빠르게 끌어올립니다.',
   },
   {
     id: 'pm',
     name: 'PM 견',
     lane: 'product',
     summary: '우선순위를 조율하고 속도를 끌어올립니다.',
+    unlockRequirement: {
+      companyStage: 2,
+      releases: 1,
+      reputation: 2,
+      employeeCount: 2,
+    },
+    hireCost: {
+      cash: 104,
+      code: 12,
+      reputation: 1,
+    },
+    modifierProfile: {
+      productivityMultiplier: 1.08,
+      focusMultiplier: 1.12,
+      teamMultiplier: 1.08,
+      qualityMultiplier: 0.98,
+      stabilityMultiplier: 1.08,
+    },
+    recommendedBreeds: ['shiba', 'golden-retriever'],
+    unlockNotes: '작업량이 늘어날수록 일정과 우선순위를 안정화합니다.',
   },
   {
     id: 'architect',
     name: '아키텍트 견',
     lane: 'platform',
     summary: '장기 생산성과 구조 안정성을 끌어올립니다.',
+    unlockRequirement: {
+      companyStage: 3,
+      releases: 2,
+      reputation: 4,
+      employeeCount: 3,
+    },
+    hireCost: {
+      cash: 148,
+      code: 18,
+      reputation: 2,
+    },
+    modifierProfile: {
+      productivityMultiplier: 1.16,
+      focusMultiplier: 1.0,
+      teamMultiplier: 1.02,
+      qualityMultiplier: 1.08,
+      stabilityMultiplier: 1.16,
+    },
+    recommendedBreeds: ['border-collie', 'shiba', 'corgi'],
+    unlockNotes: '규모가 커질수록 리팩터와 구조 안정화의 가치가 커집니다.',
   },
   {
     id: 'qa',
     name: 'QA 견',
     lane: 'release',
     summary: '배포 직전 사고를 줄여줍니다.',
+    unlockRequirement: {
+      companyStage: 2,
+      releases: 1,
+      reputation: 1,
+      employeeCount: 2,
+    },
+    hireCost: {
+      cash: 92,
+      code: 10,
+      reputation: 1,
+    },
+    modifierProfile: {
+      productivityMultiplier: 0.92,
+      focusMultiplier: 1.02,
+      teamMultiplier: 1.0,
+      qualityMultiplier: 1.18,
+      stabilityMultiplier: 1.2,
+    },
+    recommendedBreeds: ['corgi'],
+    unlockNotes: '릴리즈 안정성과 회귀 방지를 책임집니다.',
   },
-];
-
+] satisfies RoleDefinition[];
