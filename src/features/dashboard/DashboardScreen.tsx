@@ -1,8 +1,8 @@
 import { breedDefinitions } from '@/content/breeds/definitions';
 import { processModeDefinitions } from '@/content/processModes/definitions';
-import { PixiStage } from '@/game-renderer/pixi/PixiStage';
 import { useAppStore } from '@/app/providers/useAppStore';
 import { getBuildMeta } from '@/app/bootstrap/getBuildMeta';
+import { GameScene } from '@/features/dashboard/GameScene';
 import { getDashboardMetrics, getHireCards, getProcessCards, getScaleProgress } from '@/game-core/selectors/dashboard';
 import { formatInsets } from '@/shared/utils/format';
 
@@ -20,6 +20,16 @@ const prStack = [
   {
     branch: 'codex/team-growth-and-sdlc',
     title: 'Hiring, traits, and process modes',
+    status: 'completed',
+  },
+  {
+    branch: 'codex/mobile-ui-onboarding',
+    title: 'Mobile UI and onboarding flow',
+    status: 'completed',
+  },
+  {
+    branch: 'codex/mvp-polish-and-release-readiness',
+    title: 'MVP polish and release readiness',
     status: 'active',
   },
 ];
@@ -100,7 +110,8 @@ export function DashboardScreen() {
       </section>
 
       <section className="stage-shell">
-        <PixiStage
+        <GameScene
+          animate={!platform.isReducedMotion && platform.isVisible}
           employeeCount={gameState.employeeCount}
           processLabel={currentProcess?.name ?? '애자일'}
           scaleLabel={scaleProgress.currentScale.name}
@@ -313,7 +324,7 @@ export function DashboardScreen() {
             </li>
             <li>
               <span>Build stack</span>
-              <strong>{prStack[2]?.title}</strong>
+              <strong>{prStack.at(-1)?.title}</strong>
             </li>
           </ul>
           <div className="timeline">
@@ -330,7 +341,7 @@ export function DashboardScreen() {
       <section className="footer-strip">
         <div>
           <span className="label">Launch state</span>
-          <strong>Team growth live</strong>
+          <strong>Release candidate</strong>
         </div>
         <div>
           <span className="label">Build mode</span>

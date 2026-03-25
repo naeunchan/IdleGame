@@ -1,12 +1,12 @@
 import { useAppStore } from '@/app/providers/useAppStore';
+import { shouldShowOnboarding } from '@/features/onboarding/visibility';
 
 export function OnboardingHint() {
-  const hydrationSource = useAppStore((state) => state.hydrationSource);
   const onboardingDismissed = useAppStore((state) => state.onboardingDismissed);
   const dismissOnboarding = useAppStore((state) => state.dismissOnboarding);
   const gameState = useAppStore((state) => state.gameState);
 
-  if (hydrationSource !== 'fresh-start' || onboardingDismissed || gameState.stats.releases > 0) {
+  if (!shouldShowOnboarding({ onboardingDismissed, gameState })) {
     return null;
   }
 

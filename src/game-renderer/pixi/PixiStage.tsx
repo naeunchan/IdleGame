@@ -7,12 +7,13 @@ const SCENE_WIDTH = 360;
 const SCENE_HEIGHT = 240;
 
 interface PixiStageProps {
+  animate: boolean;
   employeeCount: number;
   processLabel: string;
   scaleLabel: string;
 }
 
-export function PixiStage({ employeeCount, processLabel, scaleLabel }: PixiStageProps) {
+export function PixiStage({ animate, employeeCount, processLabel, scaleLabel }: PixiStageProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -183,6 +184,10 @@ export function PixiStage({ employeeCount, processLabel, scaleLabel }: PixiStage
 
         let elapsed = 0;
         const tick = () => {
+          if (!animate) {
+            return;
+          }
+
           elapsed += 0.045;
           puppy.y = 112 + Math.sin(elapsed) * 3;
           earLeft.rotation = Math.sin(elapsed * 1.3) * 0.06;
@@ -211,7 +216,7 @@ export function PixiStage({ employeeCount, processLabel, scaleLabel }: PixiStage
         host.innerHTML = '';
       }
     };
-  }, [employeeCount, processLabel, scaleLabel]);
+  }, [animate, employeeCount, processLabel, scaleLabel]);
 
   return <div className="stage-shell__viewport" ref={containerRef} />;
 }
