@@ -27,6 +27,7 @@ import { createPhaserStageSnapshot } from '@/game-renderer/phaser/createStageSna
 import { PhaserStage } from '@/game-renderer/phaser/PhaserStage';
 import {
   formatCompactNumber,
+  formatDateTime,
   formatDurationMs,
   formatInsets,
   formatSignedCompactNumber,
@@ -63,11 +64,14 @@ export function DashboardScreen() {
   const platform = useAppStore((state) => state.platform);
   const gameState = useAppStore((state) => state.gameState);
   const lastProgressReport = useAppStore((state) => state.lastProgressReport);
+  const saveSummary = useAppStore((state) => state.saveSummary);
   const dismissProgressReport = useAppStore((state) => state.dismissProgressReport);
   const changeProcessMode = useAppStore((state) => state.changeProcessMode);
   const hireTeamMember = useAppStore((state) => state.hireTeamMember);
   const buyWorkshopUpgrade = useAppStore((state) => state.buyWorkshopUpgrade);
   const buySnackBreak = useAppStore((state) => state.buySnackBreak);
+  const saveGameNow = useAppStore((state) => state.saveGameNow);
+  const resetGame = useAppStore((state) => state.resetGame);
   const startFocusSession = useAppStore((state) => state.startFocusSession);
   const buildMeta = getBuildMeta();
 
@@ -111,6 +115,13 @@ export function DashboardScreen() {
     onboardingGuide.completedSteps < onboardingGuide.totalSteps || !nextMilestone
       ? onboardingGuide.currentGoal
       : createMilestoneGoal(nextMilestone);
+  const saveTimestampLabel = saveSummary ? formatDateTime(saveSummary.savedAt) : '저장 기록 없음';
+  const saveProgressLabel = saveSummary
+    ? `${saveSummary.employeeCount}마리 · 납품 ${saveSummary.completedProjects}건`
+    : '새 작업실을 시작하면 자동 저장됩니다';
+  const saveResourcesLabel = saveSummary
+    ? `${formatCompactNumber(saveSummary.cash)}원 · 평판 ${formatCompactNumber(saveSummary.reputation)}`
+    : '아직 저장된 자원이 없습니다';
   const workshopCards = workshopUpgradeDefinitions.map((definition) => {
     const currentLevel = getWorkshopUpgradeLevel(gameState.workshopUpgrades, definition.id);
     const nextCost = getWorkshopUpgradeCost(definition, currentLevel);
@@ -198,6 +209,19 @@ export function DashboardScreen() {
       note: `보상 배수 x${simulation.rewardMultiplier}`,
     },
   ];
+  const handleResetGame = () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const shouldReset = window.confirm('현재 진행을 초기화하고 새 작업실에서 다시 시작할까요?');
+
+    if (!shouldReset) {
+      return;
+    }
+
+    resetGame(Date.now());
+  };
 
   return (
     <main className="app-shell">
@@ -638,6 +662,18 @@ export function DashboardScreen() {
           </div>
           <ul className="metric-list">
             <li>
+              <span>마지막 저장</span>
+              <strong>{saveTimestampLabel}</strong>
+            </li>
+            <li>
+              <span>저장된 진행</span>
+              <strong>{saveProgressLabel}</strong>
+            </li>
+            <li>
+              <span>저장 자원</span>
+              <strong>{saveResourcesLabel}</strong>
+            </li>
+            <li>
               <span>창문 크기</span>
               <strong>
                 {platform.width} x {platform.height}
@@ -656,11 +692,27 @@ export function DashboardScreen() {
               <strong>{buildMeta.isDev ? '개발 중' : buildMeta.mode}</strong>
             </li>
           </ul>
+          <div className="action-row">
+            <button
+              className="action-button"
+              onClick={() => {
+                saveGameNow(Date.now());
+              }}
+              type="button"
+            >
+              지금 저장
+              <small>현재 작업실 상태를 즉시 저장합니다</small>
+            </button>
+            <button className="action-button action-button--secondary" onClick={handleResetGame} type="button">
+              새로 시작
+              <small>현재 저장을 초기 작업실 상태로 교체합니다</small>
+            </button>
+          </div>
           <div className="panel-note">
-            <strong>다음 성장 목표</strong>
+            <strong>자동 저장 안내</strong>
             <p>
-              납품 {Math.max(0, 3 - gameState.completedProjects)}건을 더 하면 작업실이 한 단계 커지고, 팀 조합에 따라
-              생산 속도와 보상 안정성이 더 크게 갈립니다.
+              진행 변화는 자동 저장되고, 문제가 생기면 지금 저장으로 즉시 기록할 수 있습니다. 새로 시작을 누르면
+              현재 슬롯이 초기 작업실로 바뀝니다.
             </p>
           </div>
         </article>

@@ -1,4 +1,10 @@
-import { formatCompactNumber, formatDurationMs, formatInsets, formatSignedCompactNumber } from '@/shared/utils/format';
+import {
+  formatCompactNumber,
+  formatDateTime,
+  formatDurationMs,
+  formatInsets,
+  formatSignedCompactNumber,
+} from '@/shared/utils/format';
 
 describe('formatInsets', () => {
   it('formats the safe area inset string', () => {
@@ -16,5 +22,9 @@ describe('format helpers', () => {
   it('formats duration text', () => {
     expect(formatDurationMs(18_000)).toBe('18초');
     expect(formatDurationMs(75_000)).toBe('1분 15초');
+  });
+
+  it('formats absolute date and time text', () => {
+    expect(formatDateTime(new Date(2026, 2, 26, 1, 2).getTime())).toBe('2026.03.26 01:02');
   });
 });

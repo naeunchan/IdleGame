@@ -10,7 +10,12 @@ import {
   switchProcessMode,
   takeSnackBreak,
 } from '@/game-core/engine/simulation';
-import { loadPersistedGame } from '@/persistence/gameSave';
+import {
+  clearPersistedGame,
+  loadPersistedGame,
+  persistGame,
+} from '@/persistence/gameSave';
+import type { SaveSummary } from '@/persistence/gameSave';
 import type { PlatformBridge, PlatformSnapshot } from '@/shared/types/platform';
 import type { ProcessMode } from '@/entities/process';
 import type { WorkshopUpgradeId } from '@/entities/upgrade';
@@ -21,8 +26,10 @@ interface AppStoreState {
   gameState: GameState;
   hasHydrated: boolean;
   lastProgressReport: ProgressReport | null;
+  saveSummary: SaveSummary | null;
   setBridge: (bridge: PlatformBridge) => void;
   setPlatform: (snapshot: PlatformSnapshot) => void;
+  setSaveSummary: (summary: SaveSummary | null) => void;
   hydrateGame: (now?: number) => void;
   tick: (now?: number) => void;
   hireTeamMember: (candidateId: string) => void;
@@ -30,6 +37,8 @@ interface AppStoreState {
   buyWorkshopUpgrade: (upgradeId: WorkshopUpgradeId) => void;
   startFocusSession: () => void;
   buySnackBreak: () => void;
+  saveGameNow: (now?: number) => void;
+  resetGame: (now?: number) => void;
   dismissProgressReport: () => void;
 }
 
@@ -49,8 +58,10 @@ export const useAppStore = create<AppStoreState>((set) => ({
   gameState: createInitialGameState(),
   hasHydrated: false,
   lastProgressReport: null,
+  saveSummary: null,
   setBridge: (bridge) => set({ bridge }),
   setPlatform: (platform) => set({ platform }),
+  setSaveSummary: (saveSummary) => set({ saveSummary }),
   hydrateGame: (now = Date.now()) =>
     set((state) => {
       if (state.hasHydrated) {
@@ -63,6 +74,7 @@ export const useAppStore = create<AppStoreState>((set) => ({
         gameState: hydrated.gameState,
         hasHydrated: true,
         lastProgressReport: hydrated.report,
+        saveSummary: hydrated.summary,
       };
     }),
   tick: (now = Date.now()) =>
@@ -101,5 +113,31 @@ export const useAppStore = create<AppStoreState>((set) => ({
     set((state) => ({
       gameState: takeSnackBreak(state.gameState),
     })),
+  saveGameNow: (now = Date.now()) =>
+    set((state) => {
+      if (!state.hasHydrated) {
+        return state;
+      }
+
+      return {
+        saveSummary: persistGame(state.gameState, now),
+      };
+    }),
+  resetGame: (now = Date.now()) =>
+    set((state) => {
+      if (!state.hasHydrated) {
+        return state;
+      }
+
+      const gameState = createInitialGameState(now);
+
+      clearPersistedGame();
+
+      return {
+        gameState,
+        lastProgressReport: null,
+        saveSummary: persistGame(gameState, now),
+      };
+    }),
   dismissProgressReport: () => set({ lastProgressReport: null }),
 }));
