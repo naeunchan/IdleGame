@@ -5,5 +5,8 @@ export interface RoleDefinition {
   name: string;
   lane: string;
   summary: string;
+  productionBase: number;
+  qualityBase: number;
+  focusUse: number;
+  teamBuffBase: number;
 }
-

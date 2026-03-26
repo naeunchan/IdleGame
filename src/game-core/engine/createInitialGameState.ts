@@ -1,4 +1,5 @@
 import type { GameState } from '@/entities/company';
+import { createProjectForCycle } from '@/game-core/engine/simulation';
 
 export function createInitialGameState(now = Date.now()): GameState {
   return {
@@ -12,12 +13,15 @@ export function createInitialGameState(now = Date.now()): GameState {
     resources: {
       code: 12,
       focus: 100,
-      cash: 30,
+      cash: 42,
       reputation: 0,
     },
+    team: [],
     employeeCount: 1,
     currentProcess: 'agile',
+    currentProject: createProjectForCycle(0),
+    completedProjects: 0,
+    officeLevel: 1,
     lastUpdatedAt: now,
   };
 }
-
