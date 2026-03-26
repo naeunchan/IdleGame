@@ -1,6 +1,13 @@
 import { useAppStore } from '@/app/providers/useAppStore';
 import { getBuildMeta } from '@/app/bootstrap/getBuildMeta';
 import { breedDefinitions } from '@/content/breeds/definitions';
+import {
+  communityPerkDefinitions,
+  getCommunityPerkCost,
+  getCommunityPerkEffects,
+  getCommunityPerkLevel,
+  isCommunityPerkUnlocked,
+} from '@/content/community/definitions';
 import { getContractProgress } from '@/content/contracts/definitions';
 import { hiringCandidateDefinitions } from '@/content/hiring/candidates';
 import {
@@ -19,6 +26,7 @@ import {
 import { OnboardingHint } from '@/features/onboarding/OnboardingHint';
 import { getOnboardingGuide } from '@/features/onboarding/getOnboardingGuide';
 import type { MilestoneProgress } from '@/content/milestones/definitions';
+import type { CommunityPerkDefinition } from '@/entities/community';
 import type { WorkshopUpgradeDefinition } from '@/entities/upgrade';
 import {
   getAvailableHiringCandidates,
@@ -61,6 +69,16 @@ function createMilestoneGoal(progress: MilestoneProgress) {
   };
 }
 
+function formatCommunityPerkEffect(definition: CommunityPerkDefinition, level: number) {
+  const totalEffect = definition.effectPerLevel * level;
+
+  if (definition.bonusType === 'focus') {
+    return `집중 회복 +${formatCompactNumber(totalEffect)}/s`;
+  }
+
+  return `${definition.bonusLabel} +${formatCompactNumber(totalEffect * 100)}%`;
+}
+
 function formatContractReward(cash: number, reputation: number, focus: number) {
   const rewards = [];
 
@@ -88,6 +106,7 @@ export function DashboardScreen() {
   const changeProcessMode = useAppStore((state) => state.changeProcessMode);
   const hireTeamMember = useAppStore((state) => state.hireTeamMember);
   const buyWorkshopUpgrade = useAppStore((state) => state.buyWorkshopUpgrade);
+  const buyCommunityPerk = useAppStore((state) => state.buyCommunityPerk);
   const claimContractReward = useAppStore((state) => state.claimContractReward);
   const buySnackBreak = useAppStore((state) => state.buySnackBreak);
   const saveGameNow = useAppStore((state) => state.saveGameNow);
@@ -121,8 +140,13 @@ export function DashboardScreen() {
   const focusGap = Math.max(0, 14 - gameState.resources.focus);
   const snackGap = Math.max(0, 14 - gameState.resources.cash);
   const workshopUpgradeEffects = getWorkshopUpgradeEffects(gameState.workshopUpgrades);
+  const communityPerkEffects = getCommunityPerkEffects(gameState.communityPerks);
   const totalUpgradeLevels = workshopUpgradeDefinitions.reduce(
     (total, definition) => total + getWorkshopUpgradeLevel(gameState.workshopUpgrades, definition.id),
+    0,
+  );
+  const totalCommunityLevels = communityPerkDefinitions.reduce(
+    (total, definition) => total + getCommunityPerkLevel(gameState.communityPerks, definition.id),
     0,
   );
   const focusButtonNote = canStartFocusSession
@@ -156,6 +180,31 @@ export function DashboardScreen() {
         ? '보상을 수령하고 다음 계약으로 넘어갈 수 있습니다'
         : `${formatCompactNumber(remainingValue)} ${progress.definition.unitLabel} 더 필요`,
       rewardText: formatContractReward(contract.rewardCash, contract.rewardReputation, contract.rewardFocus),
+    };
+  });
+  const communityCards = communityPerkDefinitions.map((definition) => {
+    const currentLevel = getCommunityPerkLevel(gameState.communityPerks, definition.id);
+    const nextCost = getCommunityPerkCost(definition, currentLevel);
+    const isUnlocked = isCommunityPerkUnlocked(gameState, definition);
+    const canBuy = isUnlocked && nextCost !== null && gameState.resources.reputation >= nextCost;
+    const unlockMilestone = definition.unlockMilestoneId
+      ? milestoneTimeline.find((item) => item.definition.id === definition.unlockMilestoneId) ?? null
+      : null;
+
+    return {
+      definition,
+      currentLevel,
+      nextCost,
+      canBuy,
+      isUnlocked,
+      unlockMilestone,
+      currentBonus: currentLevel
+        ? formatCommunityPerkEffect(definition, currentLevel)
+        : `${definition.bonusLabel} 보너스 없음`,
+      nextBonus:
+        currentLevel < definition.maxLevel
+          ? formatCommunityPerkEffect(definition, currentLevel + 1)
+          : '최대 단계 완료',
     };
   });
   const workshopCards = workshopUpgradeDefinitions.map((definition) => {
@@ -528,6 +577,80 @@ export function DashboardScreen() {
                 </p>
               </div>
             ) : null}
+          </div>
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
+            <div>
+              <span className="panel-kicker">Community Hub</span>
+              <h2>평판 허브</h2>
+            </div>
+            <span>특전 {totalCommunityLevels}단계</span>
+          </div>
+
+          <div className="upgrade-list">
+            {communityCards.map(
+              ({ definition, currentLevel, nextCost, canBuy, isUnlocked, unlockMilestone, currentBonus, nextBonus }) => (
+                <div className="upgrade-card" key={definition.id}>
+                  <div className="upgrade-card__copy">
+                    <span>{definition.name}</span>
+                    <strong>
+                      Lv.{currentLevel} / {definition.maxLevel}
+                    </strong>
+                    <p>{definition.summary}</p>
+                  </div>
+
+                  <div className="upgrade-card__meta">
+                    <small>현재 {currentBonus}</small>
+                    <small>
+                      {isUnlocked || !unlockMilestone
+                        ? `다음 ${nextBonus}`
+                        : `해금 ${unlockMilestone.definition.name} · ${unlockMilestone.progressText}`}
+                    </small>
+                  </div>
+
+                  <div className="upgrade-card__footer">
+                    <small>
+                      {!isUnlocked && unlockMilestone
+                        ? `${unlockMilestone.definition.name} 달성 필요`
+                        : nextCost === null
+                          ? '커뮤니티 완성'
+                          : canBuy
+                            ? `평판 ${formatCompactNumber(nextCost)} 사용 가능`
+                            : `평판 ${formatCompactNumber(nextCost)} · ${formatCompactNumber(
+                                nextCost - gameState.resources.reputation,
+                              )} 부족`}
+                    </small>
+                    <button
+                      className="action-button action-button--small"
+                      disabled={!canBuy}
+                      onClick={() => {
+                        buyCommunityPerk(definition.id);
+                      }}
+                      type="button"
+                    >
+                      {!isUnlocked && unlockMilestone
+                        ? '이정표 필요'
+                        : nextCost === null
+                          ? '완료'
+                          : canBuy
+                            ? '후원'
+                            : '평판 부족'}
+                    </button>
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+
+          <div className="panel-note">
+            <strong>현재 평판 효과</strong>
+            <p>
+              생산 +{formatCompactNumber(communityPerkEffects.productionMultiplierBonus * 100)}% · 집중 회복 +
+              {formatCompactNumber(communityPerkEffects.focusRecoveryBonus)}/s · 계약 보상 +
+              {formatCompactNumber(communityPerkEffects.contractRewardMultiplierBonus * 100)}%
+            </p>
           </div>
         </article>
 

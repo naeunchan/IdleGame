@@ -9,6 +9,7 @@ describe('createInitialGameState', () => {
     expect(state.employeeCount).toBe(1);
     expect(state.currentProcess).toBe('agile');
     expect(state.team).toEqual([]);
+    expect(state.communityPerks).toEqual({});
     expect(state.workshopUpgrades).toEqual({});
     expect(state.contractBoard).toHaveLength(3);
     expect(state.nextContractSerial).toBe(3);

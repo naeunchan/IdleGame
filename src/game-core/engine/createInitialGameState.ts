@@ -24,6 +24,7 @@ export function createInitialGameState(now = Date.now()): GameState {
     stats,
     contractBoard,
     nextContractSerial: contractBoard.length,
+    communityPerks: {},
     workshopUpgrades: {},
     team: [],
     employeeCount: 1,

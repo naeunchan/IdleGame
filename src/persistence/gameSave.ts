@@ -39,6 +39,7 @@ function normalizeGameState(gameState: GameState): GameState {
     stats,
     contractBoard: contractBoard.slice(0, CONTRACT_BOARD_SIZE),
     nextContractSerial: Math.max(nextContractSerial, getNextContractSerial(contractBoard)),
+    communityPerks: gameState.communityPerks ?? {},
     workshopUpgrades: gameState.workshopUpgrades ?? {},
   };
 }

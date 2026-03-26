@@ -68,6 +68,7 @@ describe('game save persistence', () => {
     delete legacyState.stats;
     delete legacyState.contractBoard;
     delete legacyState.nextContractSerial;
+    delete legacyState.communityPerks;
 
     window.localStorage.setItem(
       GAME_SAVE_KEY,
@@ -83,5 +84,6 @@ describe('game save persistence', () => {
     expect(loaded.gameState.stats.totalCashEarned).toBeGreaterThanOrEqual(0);
     expect(loaded.gameState.contractBoard).toHaveLength(3);
     expect(loaded.gameState.nextContractSerial).toBeGreaterThanOrEqual(3);
+    expect(loaded.gameState.communityPerks).toEqual({});
   });
 });

@@ -1,3 +1,4 @@
+import type { CommunityPerkLevels } from '@/entities/community';
 import type { BreedId } from '@/entities/dog';
 import type { RoleId } from '@/entities/job';
 import type { ProcessMode } from '@/entities/process';
@@ -74,6 +75,7 @@ export interface GameState {
   stats: CompanyStats;
   contractBoard: ContractState[];
   nextContractSerial: number;
+  communityPerks?: CommunityPerkLevels;
   workshopUpgrades?: WorkshopUpgradeLevels;
   employeeCount: number;
   currentProcess: ProcessMode;

@@ -1,3 +1,10 @@
+import {
+  communityPerkDefinitions,
+  getCommunityPerkCost,
+  getCommunityPerkEffects,
+  getCommunityPerkLevel,
+  isCommunityPerkUnlocked,
+} from '@/content/community/definitions';
 import { hiringCandidateDefinitions } from '@/content/hiring/candidates';
 import {
   createContractForSerial,
@@ -23,6 +30,7 @@ import type {
   TickInput,
 } from '@/entities/company';
 import type { ProcessMode } from '@/entities/process';
+import type { CommunityPerkId } from '@/entities/community';
 import type { WorkshopUpgradeId } from '@/entities/upgrade';
 
 const MAX_FOCUS = 100;
@@ -115,6 +123,7 @@ export function getSimulationSnapshot(state: GameState): SimulationSnapshot {
   const roster = getRoster(state);
   const process = getProcessDefinition(state.currentProcess);
   const upgradeEffects = getWorkshopUpgradeEffects(state.workshopUpgrades);
+  const communityEffects = getCommunityPerkEffects(state.communityPerks);
 
   const aggregate = roster.reduce(
     (acc, member) => {
@@ -143,8 +152,12 @@ export function getSimulationSnapshot(state: GameState): SimulationSnapshot {
     process.productionMultiplier *
     teamHarmony *
     focusRatio *
-    (1 + upgradeEffects.productionMultiplierBonus);
-  const focusRecovery = 0.42 + Math.min(0.32, aggregate.teamBuff * 0.28) + upgradeEffects.focusRecoveryBonus;
+    (1 + upgradeEffects.productionMultiplierBonus + communityEffects.productionMultiplierBonus);
+  const focusRecovery =
+    0.42 +
+    Math.min(0.32, aggregate.teamBuff * 0.28) +
+    upgradeEffects.focusRecoveryBonus +
+    communityEffects.focusRecoveryBonus;
   const focusDrain = aggregate.focusUse * process.focusDrainMultiplier;
   const focusDeltaPerSecond = focusRecovery - focusDrain;
   const qualityScore = aggregate.quality * process.qualityMultiplier;
@@ -213,6 +226,7 @@ export function advanceGameState(state: GameState, input: TickInput) {
     resources: { ...state.resources },
     stats: { ...state.stats },
     contractBoard: state.contractBoard.map((contract) => ({ ...contract })),
+    communityPerks: { ...(state.communityPerks ?? {}) },
     workshopUpgrades: { ...(state.workshopUpgrades ?? {}) },
     founder: { ...state.founder },
     team: state.team.map((member) => ({ ...member })),
@@ -324,6 +338,33 @@ export function purchaseWorkshopUpgrade(state: GameState, upgradeId: WorkshopUpg
   };
 }
 
+export function purchaseCommunityPerk(state: GameState, perkId: CommunityPerkId) {
+  const definition = communityPerkDefinitions.find((item) => item.id === perkId);
+
+  if (!definition || !isCommunityPerkUnlocked(state, definition)) {
+    return state;
+  }
+
+  const currentLevel = getCommunityPerkLevel(state.communityPerks, perkId);
+  const nextCost = getCommunityPerkCost(definition, currentLevel);
+
+  if (nextCost === null || state.resources.reputation < nextCost) {
+    return state;
+  }
+
+  return {
+    ...state,
+    resources: {
+      ...state.resources,
+      reputation: round(state.resources.reputation - nextCost),
+    },
+    communityPerks: {
+      ...(state.communityPerks ?? {}),
+      [perkId]: currentLevel + 1,
+    },
+  };
+}
+
 export function runFocusSession(state: GameState) {
   if (state.resources.focus < 14) {
     return state;
@@ -400,10 +441,14 @@ export function claimContract(state: GameState, contractId: string) {
     return state;
   }
 
+  const communityEffects = getCommunityPerkEffects(state.communityPerks);
+  const contractRewardMultiplier = 1 + communityEffects.contractRewardMultiplierBonus;
+  const rewardCash = round(activeContract.rewardCash * contractRewardMultiplier);
+  const rewardReputation = round(activeContract.rewardReputation * contractRewardMultiplier);
   const nextStats = {
     ...state.stats,
-    totalCashEarned: round(state.stats.totalCashEarned + activeContract.rewardCash),
-    totalReputationEarned: round(state.stats.totalReputationEarned + activeContract.rewardReputation),
+    totalCashEarned: round(state.stats.totalCashEarned + rewardCash),
+    totalReputationEarned: round(state.stats.totalReputationEarned + rewardReputation),
     totalContractsCompleted: state.stats.totalContractsCompleted + 1,
   };
   const nextContractSerial = state.nextContractSerial + 1;
@@ -417,8 +462,8 @@ export function claimContract(state: GameState, contractId: string) {
     ...state,
     resources: {
       ...state.resources,
-      cash: round(state.resources.cash + activeContract.rewardCash),
-      reputation: round(state.resources.reputation + activeContract.rewardReputation),
+      cash: round(state.resources.cash + rewardCash),
+      reputation: round(state.resources.reputation + rewardReputation),
       focus: clamp(round(state.resources.focus + activeContract.rewardFocus), 0, MAX_FOCUS),
     },
     stats: nextStats,

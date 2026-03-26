@@ -6,6 +6,7 @@ import {
   getAvailableHiringCandidates,
   getSimulationSnapshot,
   hireCandidate,
+  purchaseCommunityPerk,
   purchaseWorkshopUpgrade,
   runFocusSession,
   switchProcessMode,
@@ -74,6 +75,24 @@ describe('simulation core loop', () => {
     expect(after.codePerSecond).toBeGreaterThan(before.codePerSecond);
   });
 
+  it('lets the player spend reputation on community perks that boost the loop', () => {
+    const initial = createInitialGameState(0);
+    const reputationReady = {
+      ...initial,
+      resources: {
+        ...initial.resources,
+        reputation: 12,
+      },
+    };
+    const before = getSimulationSnapshot(reputationReady);
+    const upgraded = purchaseCommunityPerk(reputationReady, 'quiet-library');
+    const after = getSimulationSnapshot(upgraded);
+
+    expect(upgraded.communityPerks?.['quiet-library']).toBe(1);
+    expect(upgraded.resources.reputation).toBeLessThan(reputationReady.resources.reputation);
+    expect(after.focusDeltaPerSecond).toBeGreaterThan(before.focusDeltaPerSecond);
+  });
+
   it('keeps milestone-locked upgrades unavailable until their requirement is met', () => {
     const initial = createInitialGameState(0);
     const lockedAttempt = purchaseWorkshopUpgrade(
@@ -121,6 +140,9 @@ describe('simulation core loop', () => {
         ...initial.resources,
         focus: 80,
       },
+      communityPerks: {
+        'local-ambassadors': 1,
+      },
       stats: {
         ...initial.stats,
         totalCashEarned: 120,
@@ -141,8 +163,8 @@ describe('simulation core loop', () => {
     };
     const claimed = claimContract(readyState, readyState.contractBoard[0].id);
 
-    expect(claimed.resources.cash).toBe(readyState.resources.cash + 20);
-    expect(claimed.resources.reputation).toBe(readyState.resources.reputation + 2);
+    expect(claimed.resources.cash).toBe(readyState.resources.cash + 22.4);
+    expect(claimed.resources.reputation).toBe(readyState.resources.reputation + 2.2);
     expect(claimed.resources.focus).toBe(86);
     expect(claimed.stats.totalContractsCompleted).toBe(1);
     expect(claimed.contractBoard[0].id).not.toBe(readyState.contractBoard[0].id);

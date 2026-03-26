@@ -6,6 +6,7 @@ import {
   advanceGameState,
   claimContract,
   hireCandidate,
+  purchaseCommunityPerk,
   purchaseWorkshopUpgrade,
   runFocusSession,
   switchProcessMode,
@@ -18,6 +19,7 @@ import {
 } from '@/persistence/gameSave';
 import type { SaveSummary } from '@/persistence/gameSave';
 import type { PlatformBridge, PlatformSnapshot } from '@/shared/types/platform';
+import type { CommunityPerkId } from '@/entities/community';
 import type { ProcessMode } from '@/entities/process';
 import type { WorkshopUpgradeId } from '@/entities/upgrade';
 
@@ -36,6 +38,7 @@ interface AppStoreState {
   hireTeamMember: (candidateId: string) => void;
   changeProcessMode: (processMode: ProcessMode) => void;
   buyWorkshopUpgrade: (upgradeId: WorkshopUpgradeId) => void;
+  buyCommunityPerk: (perkId: CommunityPerkId) => void;
   claimContractReward: (contractId: string) => void;
   startFocusSession: () => void;
   buySnackBreak: () => void;
@@ -106,6 +109,10 @@ export const useAppStore = create<AppStoreState>((set) => ({
   buyWorkshopUpgrade: (upgradeId) =>
     set((state) => ({
       gameState: purchaseWorkshopUpgrade(state.gameState, upgradeId),
+    })),
+  buyCommunityPerk: (perkId) =>
+    set((state) => ({
+      gameState: purchaseCommunityPerk(state.gameState, perkId),
     })),
   claimContractReward: (contractId) =>
     set((state) => ({
