@@ -4,8 +4,15 @@ import { breedDefinitions } from '@/content/breeds/definitions';
 import { hiringCandidateDefinitions } from '@/content/hiring/candidates';
 import { roleDefinitions } from '@/content/jobs/definitions';
 import { processModeDefinitions } from '@/content/processModes/definitions';
+import {
+  getWorkshopUpgradeCost,
+  getWorkshopUpgradeEffects,
+  getWorkshopUpgradeLevel,
+  workshopUpgradeDefinitions,
+} from '@/content/upgrades/definitions';
 import { OnboardingHint } from '@/features/onboarding/OnboardingHint';
 import { getOnboardingGuide } from '@/features/onboarding/getOnboardingGuide';
+import type { WorkshopUpgradeDefinition } from '@/entities/upgrade';
 import {
   getAvailableHiringCandidates,
   getSimulationSnapshot,
@@ -24,6 +31,16 @@ const officeLabels = {
   3: '동네 개발사',
 } as const;
 
+function formatWorkshopUpgradeEffect(definition: WorkshopUpgradeDefinition, level: number) {
+  const totalEffect = definition.effectPerLevel * level;
+
+  if (definition.bonusType === 'focus') {
+    return `집중 회복 +${formatCompactNumber(totalEffect)}/s`;
+  }
+
+  return `${definition.bonusLabel} +${formatCompactNumber(totalEffect * 100)}%`;
+}
+
 export function DashboardScreen() {
   const platform = useAppStore((state) => state.platform);
   const gameState = useAppStore((state) => state.gameState);
@@ -31,6 +48,7 @@ export function DashboardScreen() {
   const dismissProgressReport = useAppStore((state) => state.dismissProgressReport);
   const changeProcessMode = useAppStore((state) => state.changeProcessMode);
   const hireTeamMember = useAppStore((state) => state.hireTeamMember);
+  const buyWorkshopUpgrade = useAppStore((state) => state.buyWorkshopUpgrade);
   const buySnackBreak = useAppStore((state) => state.buySnackBreak);
   const startFocusSession = useAppStore((state) => state.startFocusSession);
   const buildMeta = getBuildMeta();
@@ -57,12 +75,36 @@ export function DashboardScreen() {
   const canBuySnackBreak = gameState.resources.cash >= 14;
   const focusGap = Math.max(0, 14 - gameState.resources.focus);
   const snackGap = Math.max(0, 14 - gameState.resources.cash);
+  const workshopUpgradeEffects = getWorkshopUpgradeEffects(gameState.workshopUpgrades);
+  const totalUpgradeLevels = workshopUpgradeDefinitions.reduce(
+    (total, definition) => total + getWorkshopUpgradeLevel(gameState.workshopUpgrades, definition.id),
+    0,
+  );
   const focusButtonNote = canStartFocusSession
     ? '집중력 14 소모 · 진행도 16 즉시 추가'
     : `집중력이 ${formatCompactNumber(focusGap)} 더 필요 · 자동 회복 또는 간식 휴식`;
   const snackButtonNote = canBuySnackBreak
     ? '14원 사용 · 집중력 22 회복'
     : `운영 자금 ${formatCompactNumber(snackGap)}원 더 필요`;
+  const workshopCards = workshopUpgradeDefinitions.map((definition) => {
+    const currentLevel = getWorkshopUpgradeLevel(gameState.workshopUpgrades, definition.id);
+    const nextCost = getWorkshopUpgradeCost(definition, currentLevel);
+    const canBuy = nextCost !== null && gameState.resources.cash >= nextCost;
+
+    return {
+      definition,
+      currentLevel,
+      nextCost,
+      canBuy,
+      currentBonus: currentLevel
+        ? formatWorkshopUpgradeEffect(definition, currentLevel)
+        : `${definition.bonusLabel} 보너스 없음`,
+      nextBonus:
+        currentLevel < definition.maxLevel
+          ? formatWorkshopUpgradeEffect(definition, currentLevel + 1)
+          : '최대 단계 완료',
+    };
+  });
 
   const roster = [
     {
@@ -395,6 +437,66 @@ export function DashboardScreen() {
                 </p>
               </div>
             ) : null}
+          </div>
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
+            <div>
+              <span className="panel-kicker">Workshop Upgrades</span>
+              <h2>작업실 정비</h2>
+            </div>
+            <span>영구 보너스 {totalUpgradeLevels}단계</span>
+          </div>
+
+          <div className="upgrade-list">
+            {workshopCards.map(({ definition, currentLevel, nextCost, canBuy, currentBonus, nextBonus }) => (
+              <div className="upgrade-card" key={definition.id}>
+                <div className="upgrade-card__copy">
+                  <span>{definition.name}</span>
+                  <strong>
+                    Lv.{currentLevel} / {definition.maxLevel}
+                  </strong>
+                  <p>{definition.summary}</p>
+                </div>
+
+                <div className="upgrade-card__meta">
+                  <small>현재 {currentBonus}</small>
+                  <small>다음 {nextBonus}</small>
+                </div>
+
+                <div className="upgrade-card__footer">
+                  <small>
+                    {nextCost === null
+                      ? '정비 완료'
+                      : canBuy
+                        ? `${formatCompactNumber(nextCost)}원 투자 가능`
+                        : `${formatCompactNumber(nextCost)}원 · ${formatCompactNumber(
+                            nextCost - gameState.resources.cash,
+                          )}원 부족`}
+                  </small>
+                  <button
+                    className="action-button action-button--small"
+                    disabled={!canBuy}
+                    onClick={() => {
+                      buyWorkshopUpgrade(definition.id);
+                    }}
+                    type="button"
+                  >
+                    {nextCost === null ? '완료' : canBuy ? '정비' : '자금 부족'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="panel-note">
+            <strong>현재 작업실 보정</strong>
+            <p>
+              생산 +{formatCompactNumber(workshopUpgradeEffects.productionMultiplierBonus * 100)}% · 집중 회복 +
+              {formatCompactNumber(workshopUpgradeEffects.focusRecoveryBonus)}/s · 보상 +
+              {formatCompactNumber(workshopUpgradeEffects.rewardMultiplierBonus * 100)}%
+            </p>
           </div>
         </article>
 

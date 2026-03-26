@@ -364,6 +364,7 @@ select {
 .breed-grid,
 .role-grid,
 .process-list,
+.upgrade-list,
 .roster-list,
 .candidate-list,
 .stat-grid {
@@ -417,6 +418,7 @@ select {
 .goal-card,
 .stat-card,
 .roster-card,
+.upgrade-card,
 .candidate-card,
 .process-card,
 .empty-card {
@@ -433,6 +435,7 @@ select {
 .project-card,
 .goal-card,
 .roster-card,
+.upgrade-card,
 .candidate-card,
 .process-card,
 .empty-card {
@@ -453,6 +456,7 @@ select {
 .goal-card strong,
 .stat-card strong,
 .roster-card strong,
+.upgrade-card strong,
 .candidate-card strong,
 .process-card strong,
 .empty-card strong {
@@ -465,6 +469,7 @@ select {
 .offline-banner p,
 .project-card p,
 .goal-card p,
+.upgrade-card p,
 .candidate-card p,
 .empty-card p {
   margin: 6px 0 0;
@@ -486,6 +491,7 @@ select {
 
 .project-card__header,
 .project-card__footer,
+.upgrade-card__footer,
 .candidate-card__footer {
   display: flex;
   justify-content: space-between;
@@ -495,6 +501,7 @@ select {
 
 .project-card__header small,
 .project-card__footer span,
+.upgrade-card__footer small,
 .candidate-card__footer small {
   color: var(--sub-ink);
 }
@@ -549,6 +556,7 @@ select {
 
 .stat-card span,
 .roster-card span,
+.upgrade-card span,
 .candidate-card span,
 .process-card span,
 .empty-card span {
@@ -620,6 +628,7 @@ select {
 }
 
 .roster-card,
+.upgrade-card,
 .candidate-card,
 .process-card {
   display: grid;
@@ -633,6 +642,7 @@ select {
 
 .roster-card small,
 .candidate-card small,
+.upgrade-card small,
 .process-card small {
   color: var(--sub-ink);
 }
@@ -648,9 +658,27 @@ select {
 }
 
 .candidate-card__copy,
+.upgrade-card__copy,
 .process-stats {
   display: grid;
   gap: 6px;
+}
+
+.upgrade-card {
+  background:
+    linear-gradient(180deg, rgba(252, 244, 214, 0.98), rgba(239, 221, 166, 0.98));
+}
+
+.upgrade-card__meta {
+  display: grid;
+  gap: 6px;
+}
+
+.upgrade-card__meta small {
+  padding: 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.46);
+  border: 2px solid rgba(107, 67, 36, 0.08);
 }
 
 .process-card--active {
@@ -912,6 +940,7 @@ select {
   .project-card__footer,
   .goal-card__header,
   .goal-card__footer,
+  .upgrade-card__footer,
   .candidate-card__footer,
   .offline-banner,
   .roster-card {

@@ -3,6 +3,12 @@ import { breedDefinitions } from '@/content/breeds/definitions';
 import { roleDefinitions } from '@/content/jobs/definitions';
 import { processModeDefinitions } from '@/content/processModes/definitions';
 import { projectTemplates } from '@/content/projects/templates';
+import {
+  getWorkshopUpgradeCost,
+  getWorkshopUpgradeEffects,
+  getWorkshopUpgradeLevel,
+  workshopUpgradeDefinitions,
+} from '@/content/upgrades/definitions';
 import type {
   EmployeeProfile,
   GameState,
@@ -12,6 +18,7 @@ import type {
   TickInput,
 } from '@/entities/company';
 import type { ProcessMode } from '@/entities/process';
+import type { WorkshopUpgradeId } from '@/entities/upgrade';
 
 const MAX_FOCUS = 100;
 const MAX_OFFLINE_MS = 1000 * 60 * 60 * 3;
@@ -102,6 +109,7 @@ export function createProjectForCycle(cycle: number): ProjectState {
 export function getSimulationSnapshot(state: GameState): SimulationSnapshot {
   const roster = getRoster(state);
   const process = getProcessDefinition(state.currentProcess);
+  const upgradeEffects = getWorkshopUpgradeEffects(state.workshopUpgrades);
 
   const aggregate = roster.reduce(
     (acc, member) => {
@@ -125,12 +133,20 @@ export function getSimulationSnapshot(state: GameState): SimulationSnapshot {
 
   const focusRatio = clamp(state.resources.focus / MAX_FOCUS, 0.45, 1);
   const teamHarmony = 1 + aggregate.teamBuff;
-  const codePerSecond = aggregate.production * process.productionMultiplier * teamHarmony * focusRatio;
-  const focusRecovery = 0.42 + Math.min(0.32, aggregate.teamBuff * 0.28);
+  const codePerSecond =
+    aggregate.production *
+    process.productionMultiplier *
+    teamHarmony *
+    focusRatio *
+    (1 + upgradeEffects.productionMultiplierBonus);
+  const focusRecovery = 0.42 + Math.min(0.32, aggregate.teamBuff * 0.28) + upgradeEffects.focusRecoveryBonus;
   const focusDrain = aggregate.focusUse * process.focusDrainMultiplier;
   const focusDeltaPerSecond = focusRecovery - focusDrain;
   const qualityScore = aggregate.quality * process.qualityMultiplier;
-  const rewardMultiplier = process.rewardMultiplier * (1 + Math.min(0.42, qualityScore / 22));
+  const rewardMultiplier =
+    process.rewardMultiplier *
+    (1 + Math.min(0.42, qualityScore / 22)) *
+    (1 + upgradeEffects.rewardMultiplierBonus);
 
   return {
     codePerSecond: round(codePerSecond),
@@ -187,6 +203,7 @@ export function advanceGameState(state: GameState, input: TickInput) {
   const nextState: GameState = {
     ...state,
     resources: { ...state.resources },
+    workshopUpgrades: { ...(state.workshopUpgrades ?? {}) },
     founder: { ...state.founder },
     team: state.team.map((member) => ({ ...member })),
     currentProject: { ...state.currentProject },
@@ -255,6 +272,33 @@ export function switchProcessMode(state: GameState, processMode: ProcessMode) {
   return {
     ...state,
     currentProcess: processMode,
+  };
+}
+
+export function purchaseWorkshopUpgrade(state: GameState, upgradeId: WorkshopUpgradeId) {
+  const definition = workshopUpgradeDefinitions.find((item) => item.id === upgradeId);
+
+  if (!definition) {
+    return state;
+  }
+
+  const currentLevel = getWorkshopUpgradeLevel(state.workshopUpgrades, upgradeId);
+  const nextCost = getWorkshopUpgradeCost(definition, currentLevel);
+
+  if (nextCost === null || state.resources.cash < nextCost) {
+    return state;
+  }
+
+  return {
+    ...state,
+    resources: {
+      ...state.resources,
+      cash: round(state.resources.cash - nextCost),
+    },
+    workshopUpgrades: {
+      ...(state.workshopUpgrades ?? {}),
+      [upgradeId]: currentLevel + 1,
+    },
   };
 }
 

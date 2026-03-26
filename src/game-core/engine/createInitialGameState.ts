@@ -16,6 +16,7 @@ export function createInitialGameState(now = Date.now()): GameState {
       cash: 42,
       reputation: 0,
     },
+    workshopUpgrades: {},
     team: [],
     employeeCount: 1,
     currentProcess: 'agile',
