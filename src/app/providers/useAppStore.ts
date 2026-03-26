@@ -5,6 +5,7 @@ import { createInitialGameState } from '@/game-core/engine/createInitialGameStat
 import {
   advanceGameState,
   hireCandidate,
+  purchaseWorkshopUpgrade,
   runFocusSession,
   switchProcessMode,
   takeSnackBreak,
@@ -12,6 +13,7 @@ import {
 import { loadPersistedGame } from '@/persistence/gameSave';
 import type { PlatformBridge, PlatformSnapshot } from '@/shared/types/platform';
 import type { ProcessMode } from '@/entities/process';
+import type { WorkshopUpgradeId } from '@/entities/upgrade';
 
 interface AppStoreState {
   bridge: PlatformBridge | null;
@@ -25,6 +27,7 @@ interface AppStoreState {
   tick: (now?: number) => void;
   hireTeamMember: (candidateId: string) => void;
   changeProcessMode: (processMode: ProcessMode) => void;
+  buyWorkshopUpgrade: (upgradeId: WorkshopUpgradeId) => void;
   startFocusSession: () => void;
   buySnackBreak: () => void;
   dismissProgressReport: () => void;
@@ -85,6 +88,10 @@ export const useAppStore = create<AppStoreState>((set) => ({
   changeProcessMode: (processMode) =>
     set((state) => ({
       gameState: switchProcessMode(state.gameState, processMode),
+    })),
+  buyWorkshopUpgrade: (upgradeId) =>
+    set((state) => ({
+      gameState: purchaseWorkshopUpgrade(state.gameState, upgradeId),
     })),
   startFocusSession: () =>
     set((state) => ({

@@ -4,6 +4,7 @@ import {
   getAvailableHiringCandidates,
   getSimulationSnapshot,
   hireCandidate,
+  purchaseWorkshopUpgrade,
   runFocusSession,
   switchProcessMode,
   takeSnackBreak,
@@ -49,6 +50,24 @@ describe('simulation core loop', () => {
     expect(hired.resources.cash).toBeLessThan(advanced.gameState.resources.cash);
     expect(focused.currentProject.progress).toBeGreaterThan(hired.currentProject.progress);
     expect(snacked.resources.focus).toBeGreaterThan(focused.resources.focus);
+  });
+
+  it('lets the player buy workshop upgrades that improve the long-term loop', () => {
+    const initial = createInitialGameState(0);
+    const upgradeReady = {
+      ...initial,
+      resources: {
+        ...initial.resources,
+        cash: 120,
+      },
+    };
+    const before = getSimulationSnapshot(upgradeReady);
+    const upgraded = purchaseWorkshopUpgrade(upgradeReady, 'warm-desk');
+    const after = getSimulationSnapshot(upgraded);
+
+    expect(upgraded.workshopUpgrades?.['warm-desk']).toBe(1);
+    expect(upgraded.resources.cash).toBeLessThan(upgradeReady.resources.cash);
+    expect(after.codePerSecond).toBeGreaterThan(before.codePerSecond);
   });
 
   it('caps offline progress to a safe maximum window', () => {
