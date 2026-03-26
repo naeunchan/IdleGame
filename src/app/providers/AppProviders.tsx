@@ -9,6 +9,7 @@ export function AppProviders({ children }: PropsWithChildren) {
   const bridge = useMemo(() => createPlatformBridge(), []);
   const setBridge = useAppStore((state) => state.setBridge);
   const setPlatform = useAppStore((state) => state.setPlatform);
+  const setSaveSummary = useAppStore((state) => state.setSaveSummary);
   const gameState = useAppStore((state) => state.gameState);
   const hasHydrated = useAppStore((state) => state.hasHydrated);
   const hydrateGame = useAppStore((state) => state.hydrateGame);
@@ -49,8 +50,9 @@ export function AppProviders({ children }: PropsWithChildren) {
       return;
     }
 
-    persistGame(gameState);
-  }, [gameState, hasHydrated]);
+    const summary = persistGame(gameState);
+    setSaveSummary(summary);
+  }, [gameState, hasHydrated, setSaveSummary]);
 
   return children;
 }

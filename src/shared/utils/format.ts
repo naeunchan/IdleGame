@@ -31,3 +31,15 @@ export function formatDurationMs(durationMs: number) {
 
   return `${seconds}초`;
 }
+
+function padNumber(value: number) {
+  return value.toString().padStart(2, '0');
+}
+
+export function formatDateTime(value: number) {
+  const date = new Date(value);
+
+  return `${date.getFullYear()}.${padNumber(date.getMonth() + 1)}.${padNumber(date.getDate())} ${padNumber(
+    date.getHours(),
+  )}:${padNumber(date.getMinutes())}`;
+}
