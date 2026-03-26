@@ -414,6 +414,7 @@ select {
 
 .offline-banner,
 .project-card,
+.goal-card,
 .stat-card,
 .roster-card,
 .candidate-card,
@@ -430,6 +431,7 @@ select {
 
 .offline-banner,
 .project-card,
+.goal-card,
 .roster-card,
 .candidate-card,
 .process-card,
@@ -448,6 +450,7 @@ select {
 
 .offline-banner strong,
 .project-card strong,
+.goal-card strong,
 .stat-card strong,
 .roster-card strong,
 .candidate-card strong,
@@ -461,6 +464,7 @@ select {
 
 .offline-banner p,
 .project-card p,
+.goal-card p,
 .candidate-card p,
 .empty-card p {
   margin: 6px 0 0;
@@ -471,6 +475,13 @@ select {
 .project-card {
   display: grid;
   gap: 12px;
+}
+
+.goal-card {
+  display: grid;
+  gap: 12px;
+  background:
+    linear-gradient(180deg, #f4ebc7, #eed89c);
 }
 
 .project-card__header,
@@ -486,6 +497,27 @@ select {
 .project-card__footer span,
 .candidate-card__footer small {
   color: var(--sub-ink);
+}
+
+.goal-card__header,
+.goal-card__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.goal-card__header small,
+.goal-card__footer small,
+.goal-card__footer span {
+  color: var(--sub-ink);
+}
+
+.goal-card__footer {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 249, 234, 0.8);
+  border: 2px solid rgba(107, 67, 36, 0.12);
 }
 
 .progress-track {
@@ -726,6 +758,13 @@ select {
     linear-gradient(180deg, #f6d891, #ebc166);
 }
 
+.floating-hint__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
 .floating-hint::after {
   content: '';
   position: absolute;
@@ -744,6 +783,16 @@ select {
   margin-bottom: 6px;
 }
 
+.floating-hint__status {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 2px solid rgba(107, 67, 36, 0.18);
+  background: rgba(255, 249, 234, 0.72);
+  color: var(--wood-deep);
+  font-family: 'Pixelify Sans', sans-serif;
+  font-size: 12px;
+}
+
 .floating-hint strong {
   display: block;
   font-size: 25px;
@@ -751,6 +800,64 @@ select {
 
 .floating-hint p {
   margin-top: 8px;
+}
+
+.floating-hint__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.floating-hint__meta span,
+.guide-step span {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(255, 249, 234, 0.72);
+  border: 2px solid rgba(107, 67, 36, 0.12);
+  color: var(--sub-ink);
+  font-family: 'Pixelify Sans', sans-serif;
+  font-size: 12px;
+}
+
+.progress-track--hint {
+  margin-top: 12px;
+}
+
+.guide-step-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.guide-step {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 2px solid rgba(107, 67, 36, 0.12);
+  background: rgba(255, 250, 236, 0.76);
+}
+
+.guide-step strong {
+  margin: 0;
+  font-size: 18px;
+}
+
+.guide-step small {
+  color: var(--sub-ink);
+}
+
+.guide-step--done {
+  background: rgba(228, 245, 214, 0.92);
+}
+
+.guide-step--current {
+  background: rgba(255, 246, 207, 0.92);
+}
+
+.guide-step--locked {
+  background: rgba(253, 244, 223, 0.82);
 }
 
 @media (min-width: 720px) {
@@ -803,6 +910,8 @@ select {
 
   .project-card__header,
   .project-card__footer,
+  .goal-card__header,
+  .goal-card__footer,
   .candidate-card__footer,
   .offline-banner,
   .roster-card {

@@ -5,6 +5,7 @@ import { hiringCandidateDefinitions } from '@/content/hiring/candidates';
 import { roleDefinitions } from '@/content/jobs/definitions';
 import { processModeDefinitions } from '@/content/processModes/definitions';
 import { OnboardingHint } from '@/features/onboarding/OnboardingHint';
+import { getOnboardingGuide } from '@/features/onboarding/getOnboardingGuide';
 import {
   getAvailableHiringCandidates,
   getSimulationSnapshot,
@@ -37,6 +38,7 @@ export function DashboardScreen() {
   const founderBreed = breedDefinitions.find((breed) => breed.id === gameState.founder.breedId);
   const currentProcess = processModeDefinitions.find((mode) => mode.id === gameState.currentProcess);
   const simulation = getSimulationSnapshot(gameState);
+  const onboardingGuide = getOnboardingGuide(gameState);
   const availableCandidates = getAvailableHiringCandidates(gameState);
   const nextLockedCandidate = hiringCandidateDefinitions.find(
     (candidate) =>
@@ -51,6 +53,16 @@ export function DashboardScreen() {
   const remainingCode = Math.max(0, gameState.currentProject.requiredCode - gameState.currentProject.progress);
   const etaMs =
     simulation.codePerSecond > 0 ? (remainingCode / simulation.codePerSecond) * 1000 : null;
+  const canStartFocusSession = gameState.resources.focus >= 14;
+  const canBuySnackBreak = gameState.resources.cash >= 14;
+  const focusGap = Math.max(0, 14 - gameState.resources.focus);
+  const snackGap = Math.max(0, 14 - gameState.resources.cash);
+  const focusButtonNote = canStartFocusSession
+    ? '집중력 14 소모 · 진행도 16 즉시 추가'
+    : `집중력이 ${formatCompactNumber(focusGap)} 더 필요 · 자동 회복 또는 간식 휴식`;
+  const snackButtonNote = canBuySnackBreak
+    ? '14원 사용 · 집중력 22 회복'
+    : `운영 자금 ${formatCompactNumber(snackGap)}원 더 필요`;
 
   const roster = [
     {
@@ -195,7 +207,7 @@ export function DashboardScreen() {
         <PhaserStage />
       </section>
 
-      <OnboardingHint />
+      <OnboardingHint guide={onboardingGuide} />
 
       <section className="grid-panels">
         <article className="panel panel--wide">
@@ -222,6 +234,27 @@ export function DashboardScreen() {
               </button>
             </div>
           ) : null}
+
+          <div className="goal-card">
+            <div className="goal-card__header">
+              <div>
+                <span className="label">다음 목표</span>
+                <strong>{onboardingGuide.currentGoal.title}</strong>
+              </div>
+              <small>{onboardingGuide.currentGoal.progressText}</small>
+            </div>
+            <p>{onboardingGuide.currentGoal.description}</p>
+            <div className="progress-track" aria-label="next goal progress">
+              <div
+                className="progress-track__fill"
+                style={{ width: `${onboardingGuide.currentGoal.progressPercent}%` }}
+              />
+            </div>
+            <div className="goal-card__footer">
+              <span>{onboardingGuide.currentGoal.helper}</span>
+              <small>{onboardingGuide.currentGoal.reward}</small>
+            </div>
+          </div>
 
           <div className="project-card">
             <div className="project-card__header">
@@ -266,21 +299,21 @@ export function DashboardScreen() {
           <div className="action-row">
             <button
               className="action-button"
-              disabled={gameState.resources.focus < 14}
+              disabled={!canStartFocusSession}
               onClick={startFocusSession}
               type="button"
             >
               집중 세션
-              <small>집중력 14 소모 · 진행도 16 즉시 추가</small>
+              <small>{focusButtonNote}</small>
             </button>
             <button
               className="action-button action-button--secondary"
-              disabled={gameState.resources.cash < 14}
+              disabled={!canBuySnackBreak}
               onClick={buySnackBreak}
               type="button"
             >
               간식 휴식
-              <small>14원 사용 · 집중력 22 회복</small>
+              <small>{snackButtonNote}</small>
             </button>
           </div>
         </article>
@@ -330,7 +363,13 @@ export function DashboardScreen() {
                     <p>{candidate.summary}</p>
                   </div>
                   <div className="candidate-card__footer">
-                    <small>{formatCompactNumber(candidate.cost)}원</small>
+                    <small>
+                      {canHire
+                        ? `${formatCompactNumber(candidate.cost)}원 · 지금 합류 가능`
+                        : `${formatCompactNumber(candidate.cost)}원 · ${formatCompactNumber(
+                            candidate.cost - gameState.resources.cash,
+                          )}원 더 필요`}
+                    </small>
                     <button
                       className="action-button action-button--small"
                       disabled={!canHire}
