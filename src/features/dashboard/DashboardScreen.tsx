@@ -17,6 +17,7 @@ import {
   getAvailableHiringCandidates,
   getSimulationSnapshot,
 } from '@/game-core/engine/simulation';
+import { createPhaserStageSnapshot } from '@/game-renderer/phaser/createStageSnapshot';
 import { PhaserStage } from '@/game-renderer/phaser/PhaserStage';
 import {
   formatCompactNumber,
@@ -56,6 +57,7 @@ export function DashboardScreen() {
   const founderBreed = breedDefinitions.find((breed) => breed.id === gameState.founder.breedId);
   const currentProcess = processModeDefinitions.find((mode) => mode.id === gameState.currentProcess);
   const simulation = getSimulationSnapshot(gameState);
+  const stageSnapshot = createPhaserStageSnapshot(gameState, simulation);
   const onboardingGuide = getOnboardingGuide(gameState);
   const availableCandidates = getAvailableHiringCandidates(gameState);
   const nextLockedCandidate = hiringCandidateDefinitions.find(
@@ -246,7 +248,7 @@ export function DashboardScreen() {
             <span>품질 {formatCompactNumber(simulation.qualityScore)}</span>
           </div>
         </div>
-        <PhaserStage />
+        <PhaserStage snapshot={stageSnapshot} />
       </section>
 
       <OnboardingHint guide={onboardingGuide} />
