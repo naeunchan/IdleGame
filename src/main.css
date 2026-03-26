@@ -712,6 +712,13 @@ select {
   margin-top: 8px;
 }
 
+.timeline-item p,
+.timeline-item small {
+  margin: 6px 0 0;
+  line-height: 1.5;
+  color: var(--sub-ink);
+}
+
 .role-grid {
   margin-top: 14px;
 }
@@ -747,6 +754,15 @@ select {
 
 .timeline-item--active::before {
   background: var(--accent);
+}
+
+.timeline-item--done {
+  background:
+    linear-gradient(180deg, #e7f6dc, #cfe7b6);
+}
+
+.timeline-item--done::before {
+  background: var(--leaf-deep);
 }
 
 .timeline-item--queued {

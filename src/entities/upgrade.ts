@@ -1,3 +1,5 @@
+import type { MilestoneId } from '@/entities/milestone';
+
 export type WorkshopUpgradeId = 'warm-desk' | 'snack-cart' | 'showcase-wall';
 
 export type WorkshopUpgradeLevels = Partial<Record<WorkshopUpgradeId, number>>;
@@ -6,6 +8,7 @@ export interface WorkshopUpgradeDefinition {
   id: WorkshopUpgradeId;
   name: string;
   summary: string;
+  unlockMilestoneId?: MilestoneId;
   bonusLabel: string;
   bonusType: 'production' | 'focus' | 'reward';
   effectPerLevel: number;

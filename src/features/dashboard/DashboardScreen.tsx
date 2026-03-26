@@ -2,6 +2,11 @@ import { useAppStore } from '@/app/providers/useAppStore';
 import { getBuildMeta } from '@/app/bootstrap/getBuildMeta';
 import { breedDefinitions } from '@/content/breeds/definitions';
 import { hiringCandidateDefinitions } from '@/content/hiring/candidates';
+import {
+  getMilestoneTimeline,
+  getNextMilestone,
+  isMilestoneReached,
+} from '@/content/milestones/definitions';
 import { roleDefinitions } from '@/content/jobs/definitions';
 import { processModeDefinitions } from '@/content/processModes/definitions';
 import {
@@ -12,6 +17,7 @@ import {
 } from '@/content/upgrades/definitions';
 import { OnboardingHint } from '@/features/onboarding/OnboardingHint';
 import { getOnboardingGuide } from '@/features/onboarding/getOnboardingGuide';
+import type { MilestoneProgress } from '@/content/milestones/definitions';
 import type { WorkshopUpgradeDefinition } from '@/entities/upgrade';
 import {
   getAvailableHiringCandidates,
@@ -42,6 +48,17 @@ function formatWorkshopUpgradeEffect(definition: WorkshopUpgradeDefinition, leve
   return `${definition.bonusLabel} +${formatCompactNumber(totalEffect * 100)}%`;
 }
 
+function createMilestoneGoal(progress: MilestoneProgress) {
+  return {
+    title: progress.definition.name,
+    description: progress.definition.summary,
+    helper: progress.definition.unlocks.join(' · '),
+    reward: progress.definition.rewardLabel,
+    progressText: progress.progressText,
+    progressPercent: progress.progressPercent,
+  };
+}
+
 export function DashboardScreen() {
   const platform = useAppStore((state) => state.platform);
   const gameState = useAppStore((state) => state.gameState);
@@ -59,6 +76,8 @@ export function DashboardScreen() {
   const simulation = getSimulationSnapshot(gameState);
   const stageSnapshot = createPhaserStageSnapshot(gameState, simulation);
   const onboardingGuide = getOnboardingGuide(gameState);
+  const milestoneTimeline = getMilestoneTimeline(gameState);
+  const nextMilestone = getNextMilestone(gameState);
   const availableCandidates = getAvailableHiringCandidates(gameState);
   const nextLockedCandidate = hiringCandidateDefinitions.find(
     (candidate) =>
@@ -88,16 +107,26 @@ export function DashboardScreen() {
   const snackButtonNote = canBuySnackBreak
     ? '14원 사용 · 집중력 22 회복'
     : `운영 자금 ${formatCompactNumber(snackGap)}원 더 필요`;
+  const activeGoal =
+    onboardingGuide.completedSteps < onboardingGuide.totalSteps || !nextMilestone
+      ? onboardingGuide.currentGoal
+      : createMilestoneGoal(nextMilestone);
   const workshopCards = workshopUpgradeDefinitions.map((definition) => {
     const currentLevel = getWorkshopUpgradeLevel(gameState.workshopUpgrades, definition.id);
     const nextCost = getWorkshopUpgradeCost(definition, currentLevel);
-    const canBuy = nextCost !== null && gameState.resources.cash >= nextCost;
+    const unlockMilestone = definition.unlockMilestoneId
+      ? milestoneTimeline.find((item) => item.definition.id === definition.unlockMilestoneId) ?? null
+      : null;
+    const isUnlocked = definition.unlockMilestoneId ? isMilestoneReached(gameState, definition.unlockMilestoneId) : true;
+    const canBuy = isUnlocked && nextCost !== null && gameState.resources.cash >= nextCost;
 
     return {
       definition,
       currentLevel,
       nextCost,
       canBuy,
+      isUnlocked,
+      unlockMilestone,
       currentBonus: currentLevel
         ? formatWorkshopUpgradeEffect(definition, currentLevel)
         : `${definition.bonusLabel} 보너스 없음`,
@@ -283,20 +312,20 @@ export function DashboardScreen() {
             <div className="goal-card__header">
               <div>
                 <span className="label">다음 목표</span>
-                <strong>{onboardingGuide.currentGoal.title}</strong>
+                <strong>{activeGoal.title}</strong>
               </div>
-              <small>{onboardingGuide.currentGoal.progressText}</small>
+              <small>{activeGoal.progressText}</small>
             </div>
-            <p>{onboardingGuide.currentGoal.description}</p>
+            <p>{activeGoal.description}</p>
             <div className="progress-track" aria-label="next goal progress">
               <div
                 className="progress-track__fill"
-                style={{ width: `${onboardingGuide.currentGoal.progressPercent}%` }}
+                style={{ width: `${activeGoal.progressPercent}%` }}
               />
             </div>
             <div className="goal-card__footer">
-              <span>{onboardingGuide.currentGoal.helper}</span>
-              <small>{onboardingGuide.currentGoal.reward}</small>
+              <span>{activeGoal.helper}</span>
+              <small>{activeGoal.reward}</small>
             </div>
           </div>
 
@@ -452,44 +481,58 @@ export function DashboardScreen() {
           </div>
 
           <div className="upgrade-list">
-            {workshopCards.map(({ definition, currentLevel, nextCost, canBuy, currentBonus, nextBonus }) => (
-              <div className="upgrade-card" key={definition.id}>
-                <div className="upgrade-card__copy">
-                  <span>{definition.name}</span>
-                  <strong>
-                    Lv.{currentLevel} / {definition.maxLevel}
-                  </strong>
-                  <p>{definition.summary}</p>
-                </div>
+            {workshopCards.map(
+              ({ definition, currentLevel, nextCost, canBuy, isUnlocked, unlockMilestone, currentBonus, nextBonus }) => (
+                <div className="upgrade-card" key={definition.id}>
+                  <div className="upgrade-card__copy">
+                    <span>{definition.name}</span>
+                    <strong>
+                      Lv.{currentLevel} / {definition.maxLevel}
+                    </strong>
+                    <p>{definition.summary}</p>
+                  </div>
 
-                <div className="upgrade-card__meta">
-                  <small>현재 {currentBonus}</small>
-                  <small>다음 {nextBonus}</small>
-                </div>
+                  <div className="upgrade-card__meta">
+                    <small>현재 {currentBonus}</small>
+                    <small>
+                      {isUnlocked || !unlockMilestone
+                        ? `다음 ${nextBonus}`
+                        : `해금 ${unlockMilestone.definition.name} · ${unlockMilestone.progressText}`}
+                    </small>
+                  </div>
 
-                <div className="upgrade-card__footer">
-                  <small>
-                    {nextCost === null
-                      ? '정비 완료'
-                      : canBuy
-                        ? `${formatCompactNumber(nextCost)}원 투자 가능`
-                        : `${formatCompactNumber(nextCost)}원 · ${formatCompactNumber(
-                            nextCost - gameState.resources.cash,
-                          )}원 부족`}
-                  </small>
-                  <button
-                    className="action-button action-button--small"
-                    disabled={!canBuy}
-                    onClick={() => {
-                      buyWorkshopUpgrade(definition.id);
-                    }}
-                    type="button"
-                  >
-                    {nextCost === null ? '완료' : canBuy ? '정비' : '자금 부족'}
-                  </button>
+                  <div className="upgrade-card__footer">
+                    <small>
+                      {!isUnlocked && unlockMilestone
+                        ? `${unlockMilestone.definition.name} 달성 필요`
+                        : nextCost === null
+                          ? '정비 완료'
+                          : canBuy
+                            ? `${formatCompactNumber(nextCost)}원 투자 가능`
+                            : `${formatCompactNumber(nextCost)}원 · ${formatCompactNumber(
+                                nextCost - gameState.resources.cash,
+                              )}원 부족`}
+                    </small>
+                    <button
+                      className="action-button action-button--small"
+                      disabled={!canBuy}
+                      onClick={() => {
+                        buyWorkshopUpgrade(definition.id);
+                      }}
+                      type="button"
+                    >
+                      {!isUnlocked && unlockMilestone
+                        ? '이정표 필요'
+                        : nextCost === null
+                          ? '완료'
+                          : canBuy
+                            ? '정비'
+                            : '자금 부족'}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </div>
 
           <div className="panel-note">
@@ -500,6 +543,48 @@ export function DashboardScreen() {
               {formatCompactNumber(workshopUpgradeEffects.rewardMultiplierBonus * 100)}%
             </p>
           </div>
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
+            <div>
+              <span className="panel-kicker">Roadmap</span>
+              <h2>이정표</h2>
+            </div>
+            <span>{milestoneTimeline.filter((item) => item.isComplete).length}개 달성</span>
+          </div>
+
+          <div className="timeline">
+            {milestoneTimeline.map((item) => (
+              <div
+                className={`timeline-item ${
+                  item.status === 'done'
+                    ? 'timeline-item--done'
+                    : item.status === 'current'
+                      ? 'timeline-item--active'
+                      : 'timeline-item--queued'
+                }`}
+                key={item.definition.id}
+              >
+                <span>{item.definition.rewardLabel}</span>
+                <strong>{item.definition.name}</strong>
+                <p>{item.definition.summary}</p>
+                <small>{item.progressText}</small>
+              </div>
+            ))}
+          </div>
+
+          {nextMilestone ? (
+            <div className="panel-note">
+              <strong>다음 해금</strong>
+              <p>{nextMilestone.definition.unlocks.join(' · ')}</p>
+            </div>
+          ) : (
+            <div className="panel-note">
+              <strong>이정표 완료</strong>
+              <p>현재 준비된 중기 이정표를 모두 달성했습니다. 다음 확장 단계로 넘어갈 수 있습니다.</p>
+            </div>
+          )}
         </article>
 
         <article className="panel">
