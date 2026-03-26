@@ -364,6 +364,7 @@ select {
 .breed-grid,
 .role-grid,
 .process-list,
+.contract-list,
 .upgrade-list,
 .roster-list,
 .candidate-list,
@@ -418,6 +419,7 @@ select {
 .goal-card,
 .stat-card,
 .roster-card,
+.contract-card,
 .upgrade-card,
 .candidate-card,
 .process-card,
@@ -435,6 +437,7 @@ select {
 .project-card,
 .goal-card,
 .roster-card,
+.contract-card,
 .upgrade-card,
 .candidate-card,
 .process-card,
@@ -456,6 +459,7 @@ select {
 .goal-card strong,
 .stat-card strong,
 .roster-card strong,
+.contract-card strong,
 .upgrade-card strong,
 .candidate-card strong,
 .process-card strong,
@@ -469,6 +473,7 @@ select {
 .offline-banner p,
 .project-card p,
 .goal-card p,
+.contract-card p,
 .upgrade-card p,
 .candidate-card p,
 .empty-card p {
@@ -556,6 +561,7 @@ select {
 
 .stat-card span,
 .roster-card span,
+.contract-card span,
 .upgrade-card span,
 .candidate-card span,
 .process-card span,
@@ -628,6 +634,7 @@ select {
 }
 
 .roster-card,
+.contract-card,
 .upgrade-card,
 .candidate-card,
 .process-card {
@@ -658,10 +665,32 @@ select {
 }
 
 .candidate-card__copy,
+.contract-card__copy,
 .upgrade-card__copy,
 .process-stats {
   display: grid;
   gap: 6px;
+}
+
+.contract-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  background:
+    linear-gradient(180deg, rgba(243, 238, 208, 0.98), rgba(231, 219, 169, 0.98));
+}
+
+.contract-card--ready {
+  background:
+    linear-gradient(180deg, #e8f7da, #d8edba);
+}
+
+.contract-card__meta {
+  display: grid;
+  gap: 6px;
+}
+
+.contract-card__meta small {
+  color: var(--sub-ink);
 }
 
 .upgrade-card {
@@ -956,6 +985,7 @@ select {
   .project-card__footer,
   .goal-card__header,
   .goal-card__footer,
+  .contract-card,
   .upgrade-card__footer,
   .candidate-card__footer,
   .offline-banner,

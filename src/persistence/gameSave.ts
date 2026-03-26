@@ -1,4 +1,10 @@
+import {
+  CONTRACT_BOARD_SIZE,
+  createContractForSerial,
+  getNextContractSerial,
+} from '@/content/contracts/definitions';
 import type { GameState, SaveSnapshotV1 } from '@/entities/company';
+import { createInitialCompanyStats } from '@/entities/contract';
 import { createInitialGameState } from '@/game-core/engine/createInitialGameState';
 import { advanceGameState } from '@/game-core/engine/simulation';
 
@@ -12,6 +18,29 @@ export interface SaveSummary {
   completedProjects: number;
   cash: number;
   reputation: number;
+}
+
+function normalizeGameState(gameState: GameState): GameState {
+  const stats = {
+    ...createInitialCompanyStats(),
+    ...(gameState.stats ?? {}),
+  };
+  const contractBoard = (gameState.contractBoard ?? []).map((contract) => ({ ...contract }));
+  let nextContractSerial =
+    typeof gameState.nextContractSerial === 'number' ? gameState.nextContractSerial : getNextContractSerial(contractBoard);
+
+  while (contractBoard.length < CONTRACT_BOARD_SIZE) {
+    contractBoard.push(createContractForSerial(nextContractSerial, stats, gameState.completedProjects));
+    nextContractSerial += 1;
+  }
+
+  return {
+    ...gameState,
+    stats,
+    contractBoard: contractBoard.slice(0, CONTRACT_BOARD_SIZE),
+    nextContractSerial: Math.max(nextContractSerial, getNextContractSerial(contractBoard)),
+    workshopUpgrades: gameState.workshopUpgrades ?? {},
+  };
 }
 
 function isValidGameState(value: unknown): value is GameState {
@@ -91,9 +120,10 @@ export function loadPersistedGame(now = Date.now()) {
     };
   }
 
-  const advanced = advanceGameState(snapshot.gameState, {
+  const normalized = normalizeGameState(snapshot.gameState);
+  const advanced = advanceGameState(normalized, {
     now,
-    deltaMs: now - snapshot.gameState.lastUpdatedAt,
+    deltaMs: now - normalized.lastUpdatedAt,
     isOffline: true,
   });
 

@@ -1,7 +1,12 @@
+import { createInitialContractBoard } from '@/content/contracts/definitions';
+import { createInitialCompanyStats } from '@/entities/contract';
 import type { GameState } from '@/entities/company';
 import { createProjectForCycle } from '@/game-core/engine/simulation';
 
 export function createInitialGameState(now = Date.now()): GameState {
+  const stats = createInitialCompanyStats();
+  const contractBoard = createInitialContractBoard(stats, 0);
+
   return {
     companyName: '개발견 스튜디오',
     founder: {
@@ -16,6 +21,9 @@ export function createInitialGameState(now = Date.now()): GameState {
       cash: 42,
       reputation: 0,
     },
+    stats,
+    contractBoard,
+    nextContractSerial: contractBoard.length,
     workshopUpgrades: {},
     team: [],
     employeeCount: 1,

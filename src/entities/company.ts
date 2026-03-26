@@ -1,6 +1,7 @@
 import type { BreedId } from '@/entities/dog';
 import type { RoleId } from '@/entities/job';
 import type { ProcessMode } from '@/entities/process';
+import type { CompanyStats, ContractState } from '@/entities/contract';
 import type { WorkshopUpgradeLevels } from '@/entities/upgrade';
 
 export interface Resources {
@@ -70,6 +71,9 @@ export interface GameState {
   founder: FounderProfile;
   team: EmployeeProfile[];
   resources: Resources;
+  stats: CompanyStats;
+  contractBoard: ContractState[];
+  nextContractSerial: number;
   workshopUpgrades?: WorkshopUpgradeLevels;
   employeeCount: number;
   currentProcess: ProcessMode;

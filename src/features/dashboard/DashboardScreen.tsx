@@ -1,6 +1,7 @@
 import { useAppStore } from '@/app/providers/useAppStore';
 import { getBuildMeta } from '@/app/bootstrap/getBuildMeta';
 import { breedDefinitions } from '@/content/breeds/definitions';
+import { getContractProgress } from '@/content/contracts/definitions';
 import { hiringCandidateDefinitions } from '@/content/hiring/candidates';
 import {
   getMilestoneTimeline,
@@ -60,6 +61,24 @@ function createMilestoneGoal(progress: MilestoneProgress) {
   };
 }
 
+function formatContractReward(cash: number, reputation: number, focus: number) {
+  const rewards = [];
+
+  if (cash > 0) {
+    rewards.push(`${formatCompactNumber(cash)}원`);
+  }
+
+  if (reputation > 0) {
+    rewards.push(`평판 ${formatCompactNumber(reputation)}`);
+  }
+
+  if (focus > 0) {
+    rewards.push(`집중 ${formatCompactNumber(focus)}`);
+  }
+
+  return rewards.join(' · ');
+}
+
 export function DashboardScreen() {
   const platform = useAppStore((state) => state.platform);
   const gameState = useAppStore((state) => state.gameState);
@@ -69,6 +88,7 @@ export function DashboardScreen() {
   const changeProcessMode = useAppStore((state) => state.changeProcessMode);
   const hireTeamMember = useAppStore((state) => state.hireTeamMember);
   const buyWorkshopUpgrade = useAppStore((state) => state.buyWorkshopUpgrade);
+  const claimContractReward = useAppStore((state) => state.claimContractReward);
   const buySnackBreak = useAppStore((state) => state.buySnackBreak);
   const saveGameNow = useAppStore((state) => state.saveGameNow);
   const resetGame = useAppStore((state) => state.resetGame);
@@ -122,6 +142,22 @@ export function DashboardScreen() {
   const saveResourcesLabel = saveSummary
     ? `${formatCompactNumber(saveSummary.cash)}원 · 평판 ${formatCompactNumber(saveSummary.reputation)}`
     : '아직 저장된 자원이 없습니다';
+  const contractCards = gameState.contractBoard.map((contract) => {
+    const progress = getContractProgress(gameState, contract);
+    const remainingValue = Math.max(0, contract.targetValue - progress.progressValue);
+
+    return {
+      contract,
+      progress,
+      progressText: `${formatCompactNumber(progress.progressValue)} / ${formatCompactNumber(contract.targetValue)} ${
+        progress.definition.unitLabel
+      }`,
+      helperText: progress.isComplete
+        ? '보상을 수령하고 다음 계약으로 넘어갈 수 있습니다'
+        : `${formatCompactNumber(remainingValue)} ${progress.definition.unitLabel} 더 필요`,
+      rewardText: formatContractReward(contract.rewardCash, contract.rewardReputation, contract.rewardFocus),
+    };
+  });
   const workshopCards = workshopUpgradeDefinitions.map((definition) => {
     const currentLevel = getWorkshopUpgradeLevel(gameState.workshopUpgrades, definition.id);
     const nextCost = getWorkshopUpgradeCost(definition, currentLevel);
@@ -492,6 +528,59 @@ export function DashboardScreen() {
                 </p>
               </div>
             ) : null}
+          </div>
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
+            <div>
+              <span className="panel-kicker">Contract Board</span>
+              <h2>동네 계약</h2>
+            </div>
+            <span>완료 {gameState.stats.totalContractsCompleted}건</span>
+          </div>
+
+          <div className="contract-list">
+            {contractCards.map(({ contract, progress, progressText, helperText, rewardText }) => (
+              <div className={`contract-card ${progress.isComplete ? 'contract-card--ready' : ''}`} key={contract.id}>
+                <div className="contract-card__copy">
+                  <span>{progress.definition.name}</span>
+                  <strong>Lv.{contract.tier}</strong>
+                  <p>{progress.definition.summary}</p>
+                </div>
+
+                <div className="contract-card__meta">
+                  <div className="progress-track" aria-label={`${progress.definition.name} progress`}>
+                    <div
+                      className="progress-track__fill"
+                      style={{ width: `${progress.progressPercent}%` }}
+                    />
+                  </div>
+                  <small>{progressText}</small>
+                  <small>{helperText}</small>
+                  <small>보상 {rewardText}</small>
+                </div>
+
+                <button
+                  className="action-button action-button--small"
+                  disabled={!progress.isComplete}
+                  onClick={() => {
+                    claimContractReward(contract.id);
+                  }}
+                  type="button"
+                >
+                  {progress.isComplete ? '수령' : '진행 중'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="panel-note">
+            <strong>반복 보상 루프</strong>
+            <p>
+              계약은 수령 즉시 다음 목표로 교체됩니다. 자동 생산으로 채워지는 계약과 능동 액션 계약이 섞여 있어,
+              방치와 터치 플레이를 번갈아 돌릴 수 있습니다.
+            </p>
           </div>
         </article>
 

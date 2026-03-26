@@ -60,4 +60,28 @@ describe('game save persistence', () => {
     expect(window.localStorage.getItem(GAME_SAVE_KEY)).toBeNull();
     expect(readPersistedGameSummary()).toBeNull();
   });
+
+  it('fills missing modern state fields when loading an older save', () => {
+    const initial = createInitialGameState(1000);
+    const legacyState = JSON.parse(JSON.stringify(initial)) as Record<string, unknown>;
+
+    delete legacyState.stats;
+    delete legacyState.contractBoard;
+    delete legacyState.nextContractSerial;
+
+    window.localStorage.setItem(
+      GAME_SAVE_KEY,
+      JSON.stringify({
+        version: 1,
+        savedAt: 1000,
+        gameState: legacyState,
+      }),
+    );
+
+    const loaded = loadPersistedGame(3000);
+
+    expect(loaded.gameState.stats.totalCashEarned).toBeGreaterThanOrEqual(0);
+    expect(loaded.gameState.contractBoard).toHaveLength(3);
+    expect(loaded.gameState.nextContractSerial).toBeGreaterThanOrEqual(3);
+  });
 });
