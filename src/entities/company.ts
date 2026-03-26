@@ -1,4 +1,5 @@
 import type { BreedId } from '@/entities/dog';
+import type { RoleId } from '@/entities/job';
 import type { ProcessMode } from '@/entities/process';
 
 export interface Resources {
@@ -15,12 +16,63 @@ export interface FounderProfile {
   stage: 'puppy';
 }
 
+export interface EmployeeProfile {
+  id: string;
+  name: string;
+  breedId: BreedId;
+  role: Exclude<RoleId, 'founder'>;
+  stage: 'adult';
+  hiredAtProject: number;
+}
+
+export interface ProjectState {
+  id: string;
+  name: string;
+  summary: string;
+  requiredCode: number;
+  progress: number;
+  rewardCash: number;
+  rewardReputation: number;
+  cycle: number;
+}
+
+export interface TickInput {
+  now: number;
+  deltaMs: number;
+  isOffline: boolean;
+}
+
+export interface SimulationSnapshot {
+  codePerSecond: number;
+  focusDeltaPerSecond: number;
+  qualityScore: number;
+  teamHarmony: number;
+  rewardMultiplier: number;
+}
+
+export interface ProgressReport {
+  elapsedMs: number;
+  codeGained: number;
+  cashGained: number;
+  reputationGained: number;
+  projectsCompleted: number;
+}
+
+export interface SaveSnapshotV1 {
+  version: 1;
+  savedAt: number;
+  gameState: GameState;
+}
+
 export interface GameState {
   companyName: string;
   founder: FounderProfile;
+  team: EmployeeProfile[];
   resources: Resources;
   employeeCount: number;
   currentProcess: ProcessMode;
+  currentProject: ProjectState;
+  completedProjects: number;
+  officeLevel: number;
   lastUpdatedAt: number;
 }
-

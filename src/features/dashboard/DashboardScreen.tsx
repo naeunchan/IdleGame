@@ -1,88 +1,124 @@
-import { breedDefinitions } from '@/content/breeds/definitions';
-import { roleDefinitions } from '@/content/jobs/definitions';
-import { processModeDefinitions } from '@/content/processModes/definitions';
-import { PhaserStage } from '@/game-renderer/phaser/PhaserStage';
 import { useAppStore } from '@/app/providers/useAppStore';
 import { getBuildMeta } from '@/app/bootstrap/getBuildMeta';
+import { breedDefinitions } from '@/content/breeds/definitions';
+import { hiringCandidateDefinitions } from '@/content/hiring/candidates';
+import { roleDefinitions } from '@/content/jobs/definitions';
+import { processModeDefinitions } from '@/content/processModes/definitions';
 import { OnboardingHint } from '@/features/onboarding/OnboardingHint';
-import { formatInsets } from '@/shared/utils/format';
+import {
+  getAvailableHiringCandidates,
+  getSimulationSnapshot,
+} from '@/game-core/engine/simulation';
+import { PhaserStage } from '@/game-renderer/phaser/PhaserStage';
+import {
+  formatCompactNumber,
+  formatDurationMs,
+  formatInsets,
+  formatSignedCompactNumber,
+} from '@/shared/utils/format';
 
-const prStack = [
-  {
-    branch: 'codex/foundation-webview-shell',
-    title: '포근한 기본 셸',
-    status: 'active',
-  },
-  {
-    branch: 'codex/core-loop-simulation',
-    title: '방치형 생산 루프',
-    status: 'queued',
-  },
-  {
-    branch: 'codex/team-growth-and-sdlc',
-    title: '견종 팀 성장과 SDLC',
-    status: 'queued',
-  },
-];
+const officeLabels = {
+  1: '차고 오두막',
+  2: '골목 스튜디오',
+  3: '동네 개발사',
+} as const;
 
 export function DashboardScreen() {
   const platform = useAppStore((state) => state.platform);
   const gameState = useAppStore((state) => state.gameState);
+  const lastProgressReport = useAppStore((state) => state.lastProgressReport);
+  const dismissProgressReport = useAppStore((state) => state.dismissProgressReport);
+  const changeProcessMode = useAppStore((state) => state.changeProcessMode);
+  const hireTeamMember = useAppStore((state) => state.hireTeamMember);
+  const buySnackBreak = useAppStore((state) => state.buySnackBreak);
+  const startFocusSession = useAppStore((state) => state.startFocusSession);
   const buildMeta = getBuildMeta();
+
   const founderBreed = breedDefinitions.find((breed) => breed.id === gameState.founder.breedId);
   const currentProcess = processModeDefinitions.find((mode) => mode.id === gameState.currentProcess);
+  const simulation = getSimulationSnapshot(gameState);
+  const availableCandidates = getAvailableHiringCandidates(gameState);
+  const nextLockedCandidate = hiringCandidateDefinitions.find(
+    (candidate) =>
+      !gameState.team.some((member) => member.id === candidate.id) &&
+      candidate.unlockAtProjects > gameState.completedProjects + 1,
+  );
+  const officeLabel = officeLabels[gameState.officeLevel as keyof typeof officeLabels] ?? '성장 중인 작업실';
+  const currentProjectProgress = Math.min(
+    100,
+    (gameState.currentProject.progress / gameState.currentProject.requiredCode) * 100,
+  );
+  const remainingCode = Math.max(0, gameState.currentProject.requiredCode - gameState.currentProject.progress);
+  const etaMs =
+    simulation.codePerSecond > 0 ? (remainingCode / simulation.codePerSecond) * 1000 : null;
+
+  const roster = [
+    {
+      id: 'founder',
+      name: gameState.founder.name,
+      breedId: gameState.founder.breedId,
+      role: gameState.founder.role,
+      subtitle: '창업견',
+    },
+    ...gameState.team.map((member) => ({
+      id: member.id,
+      name: member.name,
+      breedId: member.breedId,
+      role: member.role,
+      subtitle: `${member.hiredAtProject + 1}번째 납품 합류`,
+    })),
+  ];
+
   const dailyJournal = [
     {
-      label: '오늘의 작물',
-      value: '프로토타입 씨앗',
-      note: '작은 기능을 심고 천천히 키우는 날',
+      label: '현재 프로젝트',
+      value: gameState.currentProject.name,
+      note: gameState.currentProject.summary,
     },
     {
-      label: '다음 목표',
-      value: '첫 팀원 맞이',
-      note: '작업실이 외롭지 않도록 첫 동료를 준비합니다',
+      label: '다음 고용',
+      value: availableCandidates[0]?.name ?? nextLockedCandidate?.name ?? '모집 대기',
+      note: availableCandidates[0]
+        ? `${formatCompactNumber(availableCandidates[0].cost)}원 모이면 바로 합류`
+        : nextLockedCandidate
+          ? `${nextLockedCandidate.unlockAtProjects}개 납품 후 공개`
+          : '현재 후보를 모두 맞이했습니다',
     },
     {
-      label: '마을 기분',
-      value: '잔잔함',
-      note: '무리 없이 손에 익는 리듬을 먼저 만듭니다',
+      label: '작업실 단계',
+      value: officeLabel,
+      note: `${gameState.employeeCount}마리 팀 · 납품 ${gameState.completedProjects}건`,
     },
   ];
 
   const resourceCards = [
     {
       label: '코드 꾸러미',
-      value: `${formatNumber(gameState.resources.code)}`,
-      note: '오늘 다듬은 기능 조각',
+      value: formatCompactNumber(gameState.resources.code),
+      note: `초당 ${formatCompactNumber(simulation.codePerSecond)} 생산`,
     },
     {
       label: '집중력',
-      value: `${formatNumber(gameState.resources.focus)}`,
-      note: '아직 산책 갈 힘이 남아 있어요',
+      value: formatCompactNumber(gameState.resources.focus),
+      note: `초당 ${formatSignedCompactNumber(simulation.focusDeltaPerSecond)} 변화`,
     },
     {
       label: '운영 자금',
-      value: `${formatNumber(gameState.resources.cash)}원`,
-      note: '따끈한 간식과 장비 예산',
+      value: `${formatCompactNumber(gameState.resources.cash)}원`,
+      note: '고용, 간식, 작업실 정비에 사용',
     },
     {
       label: '동네 평판',
-      value: `${formatNumber(gameState.resources.reputation)}`,
-      note: '천천히 쌓이는 입소문',
+      value: formatCompactNumber(gameState.resources.reputation),
+      note: `보상 배수 x${simulation.rewardMultiplier}`,
     },
   ];
-
-  function formatNumber(value: number) {
-    return new Intl.NumberFormat('ko-KR', {
-      maximumFractionDigits: value >= 100 ? 0 : 1,
-    }).format(value);
-  }
 
   return (
     <main className="app-shell">
       <section className="hero-card">
         <div className="eyebrow-row">
-          <span className="eyebrow">Pixel Farm Ledger</span>
+          <span className="eyebrow">Cozy Dev Lodge</span>
           <span className="status-pill">{platform.isPortrait ? '도트 세로 모드' : '도트 가로 모드'}</span>
         </div>
 
@@ -90,13 +126,13 @@ export function DashboardScreen() {
           <div className="hero-copy__lead">
             <div className="season-banner">
               <span>봄 1일차</span>
-              <span>맑음</span>
-              <span>작업실에 볕이 잘 듭니다</span>
+              <span>{gameState.employeeCount}마리 근무 중</span>
+              <span>{currentProcess?.name ?? '프로세스 미정'}</span>
             </div>
             <h1>개발견 키우기</h1>
             <p>
-              농장처럼 천천히 가꿔 가는 개발 작업실을 목표로, 새끼 개발견 한 마리와 작은 기능 씨앗부터
-              키워 나가는 도트 감성 방치형 시뮬레이션입니다.
+              새끼 개발견 한 마리로 시작해, 작은 납품을 반복하고 팀을 늘리며 작업실을 포근한 회사로 키워
+              나가는 방치형 경영 시뮬레이션입니다.
             </p>
           </div>
 
@@ -119,14 +155,14 @@ export function DashboardScreen() {
               </small>
             </div>
             <div className="hero-badge">
-              <span className="label">오늘의 흐름</span>
-              <strong>{currentProcess?.name}</strong>
-              <small>{currentProcess?.summary}</small>
+              <span className="label">진행 중</span>
+              <strong>{gameState.currentProject.name}</strong>
+              <small>{etaMs ? `${formatDurationMs(etaMs)} 후 납품 예상` : '팀을 정비 중입니다'}</small>
             </div>
             <div className="hero-badge">
-              <span className="label">작업실 이름</span>
-              <strong>{gameState.companyName}</strong>
-              <small>{gameState.employeeCount}마리로 시작하는 작은 스튜디오</small>
+              <span className="label">작업실 단계</span>
+              <strong>{officeLabel}</strong>
+              <small>{gameState.completedProjects}건의 작은 배포가 공간을 키웁니다</small>
             </div>
           </div>
 
@@ -145,12 +181,15 @@ export function DashboardScreen() {
       <section className="stage-shell">
         <div className="stage-shell__copy">
           <span className="label">농장 겸 작업실</span>
-          <strong>오두막 앞 개발 밭</strong>
-          <small>작업대, 밭고랑, 작은 집, 산책로가 함께 보이는 Stardew Valley 풍의 도트 장면입니다.</small>
+          <strong>{officeLabel} 앞 개발 밭</strong>
+          <small>
+            납품 횟수가 쌓일수록 더 큰 작업실로 확장됩니다. 현재 팀 하모니는 x
+            {formatCompactNumber(simulation.teamHarmony)}입니다.
+          </small>
           <div className="stage-shell__tags">
-            <span>나무 울타리</span>
-            <span>개발 씨앗</span>
-            <span>멍발자 오두막</span>
+            <span>납품 {gameState.completedProjects}건</span>
+            <span>팀원 {gameState.employeeCount}마리</span>
+            <span>품질 {formatCompactNumber(simulation.qualityScore)}</span>
           </div>
         </div>
         <PhaserStage />
@@ -159,13 +198,215 @@ export function DashboardScreen() {
       <OnboardingHint />
 
       <section className="grid-panels">
+        <article className="panel panel--wide">
+          <div className="panel-header">
+            <div>
+              <span className="panel-kicker">Sprint Loop</span>
+              <h2>오늘의 납품</h2>
+            </div>
+            <span>{etaMs ? `남은 시간 ${formatDurationMs(etaMs)}` : '생산 속도 확인 필요'}</span>
+          </div>
+
+          {lastProgressReport ? (
+            <div className="offline-banner">
+              <div>
+                <strong>쉬는 동안도 작업실이 돌아갔어요</strong>
+                <p>
+                  {formatDurationMs(lastProgressReport.elapsedMs)} 동안 코드 {formatCompactNumber(lastProgressReport.codeGained)}
+                  , 자금 {formatCompactNumber(lastProgressReport.cashGained)}원, 평판{' '}
+                  {formatCompactNumber(lastProgressReport.reputationGained)}을 모았습니다.
+                </p>
+              </div>
+              <button className="action-button action-button--ghost" onClick={dismissProgressReport} type="button">
+                확인
+              </button>
+            </div>
+          ) : null}
+
+          <div className="project-card">
+            <div className="project-card__header">
+              <div>
+                <span className="label">현재 작업</span>
+                <strong>{gameState.currentProject.name}</strong>
+              </div>
+              <small>
+                {formatCompactNumber(gameState.currentProject.progress)} /{' '}
+                {formatCompactNumber(gameState.currentProject.requiredCode)} code
+              </small>
+            </div>
+            <p>{gameState.currentProject.summary}</p>
+            <div className="progress-track" aria-label="project progress">
+              <div className="progress-track__fill" style={{ width: `${currentProjectProgress}%` }} />
+            </div>
+            <div className="project-card__footer">
+              <span>현금 보상 {formatCompactNumber(gameState.currentProject.rewardCash)}원</span>
+              <span>평판 보상 {formatCompactNumber(gameState.currentProject.rewardReputation)}</span>
+            </div>
+          </div>
+
+          <div className="stat-grid">
+            <div className="stat-card">
+              <span>생산 속도</span>
+              <strong>{formatCompactNumber(simulation.codePerSecond)}/s</strong>
+            </div>
+            <div className="stat-card">
+              <span>집중 흐름</span>
+              <strong>{formatSignedCompactNumber(simulation.focusDeltaPerSecond)}/s</strong>
+            </div>
+            <div className="stat-card">
+              <span>품질 지수</span>
+              <strong>{formatCompactNumber(simulation.qualityScore)}</strong>
+            </div>
+            <div className="stat-card">
+              <span>보상 배수</span>
+              <strong>x{formatCompactNumber(simulation.rewardMultiplier)}</strong>
+            </div>
+          </div>
+
+          <div className="action-row">
+            <button
+              className="action-button"
+              disabled={gameState.resources.focus < 14}
+              onClick={startFocusSession}
+              type="button"
+            >
+              집중 세션
+              <small>집중력 14 소모 · 진행도 16 즉시 추가</small>
+            </button>
+            <button
+              className="action-button action-button--secondary"
+              disabled={gameState.resources.cash < 14}
+              onClick={buySnackBreak}
+              type="button"
+            >
+              간식 휴식
+              <small>14원 사용 · 집중력 22 회복</small>
+            </button>
+          </div>
+        </article>
+
         <article className="panel">
           <div className="panel-header">
             <div>
-              <span className="panel-kicker">Farm Status</span>
-              <h2>오늘의 작업실</h2>
+              <span className="panel-kicker">Hiring Desk</span>
+              <h2>팀 꾸리기</h2>
             </div>
-            <span>{platform.isTossWebView ? 'Toss WebView 안' : '브라우저 미리보기'}</span>
+            <span>현 팀 {gameState.employeeCount}마리</span>
+          </div>
+
+          <div className="roster-list">
+            {roster.map((member) => {
+              const breed = breedDefinitions.find((breedItem) => breedItem.id === member.breedId);
+              const role = roleDefinitions.find((roleItem) => roleItem.id === member.role);
+
+              return (
+                <div className="roster-card" key={member.id}>
+                  <div>
+                    <span>{member.name}</span>
+                    <strong>
+                      {breed?.name} · {role?.name}
+                    </strong>
+                    <small>{member.subtitle}</small>
+                  </div>
+                  <span className="roster-chip">{breed?.specialty}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="candidate-list">
+            {availableCandidates.map((candidate) => {
+              const breed = breedDefinitions.find((breedItem) => breedItem.id === candidate.breedId);
+              const role = roleDefinitions.find((roleItem) => roleItem.id === candidate.role);
+              const canHire = gameState.resources.cash >= candidate.cost;
+
+              return (
+                <div className="candidate-card" key={candidate.id}>
+                  <div className="candidate-card__copy">
+                    <span>{candidate.name}</span>
+                    <strong>
+                      {breed?.name} · {role?.name}
+                    </strong>
+                    <p>{candidate.summary}</p>
+                  </div>
+                  <div className="candidate-card__footer">
+                    <small>{formatCompactNumber(candidate.cost)}원</small>
+                    <button
+                      className="action-button action-button--small"
+                      disabled={!canHire}
+                      onClick={() => {
+                        hireTeamMember(candidate.id);
+                      }}
+                      type="button"
+                    >
+                      {canHire ? '고용' : '자금 부족'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+            {!availableCandidates.length ? (
+              <div className="empty-card">
+                <strong>새 후보를 찾는 중</strong>
+                <p>
+                  {nextLockedCandidate
+                    ? `다음 후보 ${nextLockedCandidate.name}는 납품 ${nextLockedCandidate.unlockAtProjects}건째에 공개됩니다.`
+                    : '현재 공개된 후보를 모두 맞이했습니다.'}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
+            <div>
+              <span className="panel-kicker">Process Board</span>
+              <h2>개발 방식</h2>
+            </div>
+            <span>{currentProcess?.bonusLabel}</span>
+          </div>
+
+          <div className="process-list">
+            {processModeDefinitions.map((mode) => {
+              const isActive = gameState.currentProcess === mode.id;
+
+              return (
+                <div className={`process-card ${isActive ? 'process-card--active' : ''}`} key={mode.id}>
+                  <div>
+                    <span>{mode.name}</span>
+                    <strong>{mode.bonusLabel}</strong>
+                    <p>{mode.summary}</p>
+                  </div>
+                  <div className="process-stats">
+                    <small>생산 x{formatCompactNumber(mode.productionMultiplier)}</small>
+                    <small>품질 x{formatCompactNumber(mode.qualityMultiplier)}</small>
+                    <small>집중 소모 x{formatCompactNumber(mode.focusDrainMultiplier)}</small>
+                  </div>
+                  <button
+                    className="action-button action-button--small"
+                    disabled={isActive}
+                    onClick={() => {
+                      changeProcessMode(mode.id);
+                    }}
+                    type="button"
+                  >
+                    {isActive ? '운영 중' : '전환'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
+            <div>
+              <span className="panel-kicker">Workshop Status</span>
+              <h2>작업실 상태</h2>
+            </div>
+            <span>{platform.isTossWebView ? 'Toss WebView' : 'Browser'}</span>
           </div>
           <ul className="metric-list">
             <li>
@@ -183,94 +424,18 @@ export function DashboardScreen() {
               <strong>{platform.isReducedMotion ? '잔잔 모드' : '기본 모드'}</strong>
             </li>
             <li>
-              <span>현재 상태</span>
-              <strong>{platform.isVisible ? '활성 작업 중' : '잠시 쉬는 중'}</strong>
+              <span>빌드 모드</span>
+              <strong>{buildMeta.isDev ? '개발 중' : buildMeta.mode}</strong>
             </li>
           </ul>
           <div className="panel-note">
-            <strong>따뜻한 톤 기준</strong>
-            <p>밝은 하늘색 배경, 크림 종이 패널, 나무 프레임을 기준으로 전체 UI를 통일합니다.</p>
+            <strong>다음 성장 목표</strong>
+            <p>
+              납품 {Math.max(0, 3 - gameState.completedProjects)}건을 더 하면 작업실이 한 단계 커지고, 팀 조합에 따라
+              생산 속도와 보상 안정성이 더 크게 갈립니다.
+            </p>
           </div>
         </article>
-
-        <article className="panel">
-          <div className="panel-header">
-            <div>
-              <span className="panel-kicker">Dog Almanac</span>
-              <h2>견종 도감</h2>
-            </div>
-            <span>{breedDefinitions.length} breeds / {roleDefinitions.length} roles</span>
-          </div>
-          <div className="breed-grid">
-            {breedDefinitions.map((breed) => (
-              <div className="breed-card" key={breed.id}>
-                <span>{breed.name}</span>
-                <strong>{breed.title}</strong>
-                <p>{breed.passive}</p>
-                <div className="breed-stat-row">
-                  <small>집중 +{breed.focusBonus}</small>
-                  <small>생산 +{breed.productivityBonus}</small>
-                  <small>품질 +{breed.qualityBonus}</small>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="role-grid">
-            {roleDefinitions.map((role) => (
-              <div className="role-pill" key={role.id}>
-                <span>{role.name}</span>
-                <small>{role.summary}</small>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel">
-          <div className="panel-header">
-            <div>
-              <span className="panel-kicker">Season Roadmap</span>
-              <h2>성장 달력</h2>
-            </div>
-            <span>{prStack.length} seasons</span>
-          </div>
-          <ul className="metric-list metric-list--compact">
-            <li>
-              <span>현재 시드</span>
-              <strong>Foundation shell</strong>
-            </li>
-            <li>
-              <span>기본 프로세스</span>
-              <strong>{currentProcess?.bonusLabel}</strong>
-            </li>
-            <li>
-              <span>다음 수확</span>
-              <strong>생산 루프와 고용 시스템</strong>
-            </li>
-          </ul>
-          <div className="timeline">
-            {prStack.map((item) => (
-              <div className={`timeline-item timeline-item--${item.status}`} key={item.branch}>
-                <strong>{item.title}</strong>
-                <span>{item.branch}</span>
-              </div>
-            ))}
-          </div>
-          <div className="panel-note">
-            <strong>다음 계절 준비</strong>
-            <p>현재 셸의 포근한 시각 언어를 유지한 채, 이후 고용과 저장 UI도 같은 재질감으로 확장합니다.</p>
-          </div>
-        </article>
-      </section>
-
-      <section className="footer-strip">
-        <div>
-          <span className="label">작업실 상태</span>
-          <strong>포근한 기본 셸 완성</strong>
-        </div>
-        <div>
-          <span className="label">빌드 모드</span>
-          <strong>{buildMeta.isDev ? 'development' : buildMeta.mode}</strong>
-        </div>
       </section>
     </main>
   );

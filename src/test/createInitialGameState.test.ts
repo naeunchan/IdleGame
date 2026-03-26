@@ -8,7 +8,10 @@ describe('createInitialGameState', () => {
     expect(state.founder.breedId).toBe('border-collie');
     expect(state.employeeCount).toBe(1);
     expect(state.currentProcess).toBe('agile');
+    expect(state.team).toEqual([]);
+    expect(state.currentProject.name).toBe('온보딩 랜딩 정리');
+    expect(state.completedProjects).toBe(0);
+    expect(state.officeLevel).toBe(1);
     expect(state.lastUpdatedAt).toBe(1234);
   });
 });
-

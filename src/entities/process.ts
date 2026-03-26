@@ -5,5 +5,8 @@ export interface ProcessModeDefinition {
   name: string;
   summary: string;
   bonusLabel: string;
+  productionMultiplier: number;
+  qualityMultiplier: number;
+  focusDrainMultiplier: number;
+  rewardMultiplier: number;
 }
-
