@@ -1,6 +1,8 @@
 import { createInitialGameState } from '@/game-core/engine/createInitialGameState';
+import type { ContractState } from '@/entities/contract';
 import {
   advanceGameState,
+  claimContract,
   getAvailableHiringCandidates,
   getSimulationSnapshot,
   hireCandidate,
@@ -50,6 +52,8 @@ describe('simulation core loop', () => {
     expect(hired.resources.cash).toBeLessThan(advanced.gameState.resources.cash);
     expect(focused.currentProject.progress).toBeGreaterThan(hired.currentProject.progress);
     expect(snacked.resources.focus).toBeGreaterThan(focused.resources.focus);
+    expect(snacked.stats.totalFocusSessions).toBe(1);
+    expect(snacked.stats.totalSnacksPurchased).toBe(1);
   });
 
   it('lets the player buy workshop upgrades that improve the long-term loop', () => {
@@ -107,5 +111,41 @@ describe('simulation core loop', () => {
     });
 
     expect(advanced.report.elapsedMs).toBe(1000 * 60 * 60 * 3);
+  });
+
+  it('lets the player claim completed contracts and refresh the slot', () => {
+    const initial = createInitialGameState(0);
+    const readyState = {
+      ...initial,
+      resources: {
+        ...initial.resources,
+        focus: 80,
+      },
+      stats: {
+        ...initial.stats,
+        totalCashEarned: 120,
+      },
+      contractBoard: initial.contractBoard.map<ContractState>((contract, index) =>
+        index === 0
+          ? {
+              ...contract,
+              definitionId: 'cashflow-cleanup',
+              baselineValue: 0,
+              targetValue: 70,
+              rewardCash: 20,
+              rewardReputation: 2,
+              rewardFocus: 6,
+            }
+          : contract,
+      ),
+    };
+    const claimed = claimContract(readyState, readyState.contractBoard[0].id);
+
+    expect(claimed.resources.cash).toBe(readyState.resources.cash + 20);
+    expect(claimed.resources.reputation).toBe(readyState.resources.reputation + 2);
+    expect(claimed.resources.focus).toBe(86);
+    expect(claimed.stats.totalContractsCompleted).toBe(1);
+    expect(claimed.contractBoard[0].id).not.toBe(readyState.contractBoard[0].id);
+    expect(claimed.nextContractSerial).toBe(readyState.nextContractSerial + 1);
   });
 });

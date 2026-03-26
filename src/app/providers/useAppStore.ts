@@ -4,6 +4,7 @@ import type { GameState, ProgressReport } from '@/entities/company';
 import { createInitialGameState } from '@/game-core/engine/createInitialGameState';
 import {
   advanceGameState,
+  claimContract,
   hireCandidate,
   purchaseWorkshopUpgrade,
   runFocusSession,
@@ -35,6 +36,7 @@ interface AppStoreState {
   hireTeamMember: (candidateId: string) => void;
   changeProcessMode: (processMode: ProcessMode) => void;
   buyWorkshopUpgrade: (upgradeId: WorkshopUpgradeId) => void;
+  claimContractReward: (contractId: string) => void;
   startFocusSession: () => void;
   buySnackBreak: () => void;
   saveGameNow: (now?: number) => void;
@@ -104,6 +106,10 @@ export const useAppStore = create<AppStoreState>((set) => ({
   buyWorkshopUpgrade: (upgradeId) =>
     set((state) => ({
       gameState: purchaseWorkshopUpgrade(state.gameState, upgradeId),
+    })),
+  claimContractReward: (contractId) =>
+    set((state) => ({
+      gameState: claimContract(state.gameState, contractId),
     })),
   startFocusSession: () =>
     set((state) => ({

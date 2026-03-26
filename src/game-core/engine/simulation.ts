@@ -1,4 +1,8 @@
 import { hiringCandidateDefinitions } from '@/content/hiring/candidates';
+import {
+  createContractForSerial,
+  getContractProgress,
+} from '@/content/contracts/definitions';
 import { isMilestoneReached } from '@/content/milestones/definitions';
 import { breedDefinitions } from '@/content/breeds/definitions';
 import { roleDefinitions } from '@/content/jobs/definitions';
@@ -172,6 +176,8 @@ function applyProjectCompletion(state: GameState, report: ProgressReport, reward
 
   state.resources.cash = round(state.resources.cash + rewardCash);
   state.resources.reputation = round(state.resources.reputation + rewardReputation);
+  state.stats.totalCashEarned = round(state.stats.totalCashEarned + rewardCash);
+  state.stats.totalReputationEarned = round(state.stats.totalReputationEarned + rewardReputation);
   state.resources.focus = clamp(round(state.resources.focus + 7), 0, MAX_FOCUS);
   state.completedProjects += 1;
 
@@ -189,6 +195,7 @@ function stepGameState(state: GameState, deltaSeconds: number, report: ProgressR
   const codeGain = snapshot.codePerSecond * deltaSeconds;
 
   state.resources.code = round(state.resources.code + codeGain);
+  state.stats.totalCodeProduced = round(state.stats.totalCodeProduced + codeGain);
   state.resources.focus = clamp(round(state.resources.focus + snapshot.focusDeltaPerSecond * deltaSeconds), 0, MAX_FOCUS);
   state.currentProject.progress = round(state.currentProject.progress + codeGain);
 
@@ -204,6 +211,8 @@ export function advanceGameState(state: GameState, input: TickInput) {
   const nextState: GameState = {
     ...state,
     resources: { ...state.resources },
+    stats: { ...state.stats },
+    contractBoard: state.contractBoard.map((contract) => ({ ...contract })),
     workshopUpgrades: { ...(state.workshopUpgrades ?? {}) },
     founder: { ...state.founder },
     team: state.team.map((member) => ({ ...member })),
@@ -256,6 +265,10 @@ export function hireCandidate(state: GameState, candidateId: string) {
       ...state.resources,
       cash: round(state.resources.cash - candidate.cost),
     },
+    stats: {
+      ...state.stats,
+      totalHires: state.stats.totalHires + 1,
+    },
     team: [...state.team, nextEmployee],
   };
 
@@ -300,6 +313,10 @@ export function purchaseWorkshopUpgrade(state: GameState, upgradeId: WorkshopUpg
       ...state.resources,
       cash: round(state.resources.cash - nextCost),
     },
+    stats: {
+      ...state.stats,
+      totalUpgradesPurchased: state.stats.totalUpgradesPurchased + 1,
+    },
     workshopUpgrades: {
       ...(state.workshopUpgrades ?? {}),
       [upgradeId]: currentLevel + 1,
@@ -318,6 +335,11 @@ export function runFocusSession(state: GameState) {
       ...state.resources,
       focus: round(state.resources.focus - 14),
       code: round(state.resources.code + 8),
+    },
+    stats: {
+      ...state.stats,
+      totalCodeProduced: round(state.stats.totalCodeProduced + 8),
+      totalFocusSessions: state.stats.totalFocusSessions + 1,
     },
     currentProject: {
       ...state.currentProject,
@@ -357,5 +379,50 @@ export function takeSnackBreak(state: GameState) {
       cash: round(state.resources.cash - 14),
       focus: clamp(round(state.resources.focus + 22), 0, MAX_FOCUS),
     },
+    stats: {
+      ...state.stats,
+      totalSnacksPurchased: state.stats.totalSnacksPurchased + 1,
+    },
+  };
+}
+
+export function claimContract(state: GameState, contractId: string) {
+  const contractIndex = state.contractBoard.findIndex((item) => item.id === contractId);
+
+  if (contractIndex < 0) {
+    return state;
+  }
+
+  const activeContract = state.contractBoard[contractIndex];
+  const progress = getContractProgress(state, activeContract);
+
+  if (!progress.isComplete) {
+    return state;
+  }
+
+  const nextStats = {
+    ...state.stats,
+    totalCashEarned: round(state.stats.totalCashEarned + activeContract.rewardCash),
+    totalReputationEarned: round(state.stats.totalReputationEarned + activeContract.rewardReputation),
+    totalContractsCompleted: state.stats.totalContractsCompleted + 1,
+  };
+  const nextContractSerial = state.nextContractSerial + 1;
+  const nextContractBoard = state.contractBoard.map((contract, index) =>
+    index === contractIndex
+      ? createContractForSerial(state.nextContractSerial, nextStats, state.completedProjects)
+      : { ...contract },
+  );
+
+  return {
+    ...state,
+    resources: {
+      ...state.resources,
+      cash: round(state.resources.cash + activeContract.rewardCash),
+      reputation: round(state.resources.reputation + activeContract.rewardReputation),
+      focus: clamp(round(state.resources.focus + activeContract.rewardFocus), 0, MAX_FOCUS),
+    },
+    stats: nextStats,
+    contractBoard: nextContractBoard,
+    nextContractSerial,
   };
 }
