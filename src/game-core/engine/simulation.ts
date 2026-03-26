@@ -1,4 +1,5 @@
 import { hiringCandidateDefinitions } from '@/content/hiring/candidates';
+import { isMilestoneReached } from '@/content/milestones/definitions';
 import { breedDefinitions } from '@/content/breeds/definitions';
 import { roleDefinitions } from '@/content/jobs/definitions';
 import { processModeDefinitions } from '@/content/processModes/definitions';
@@ -279,6 +280,10 @@ export function purchaseWorkshopUpgrade(state: GameState, upgradeId: WorkshopUpg
   const definition = workshopUpgradeDefinitions.find((item) => item.id === upgradeId);
 
   if (!definition) {
+    return state;
+  }
+
+  if (definition.unlockMilestoneId && !isMilestoneReached(state, definition.unlockMilestoneId)) {
     return state;
   }
 

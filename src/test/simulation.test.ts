@@ -70,6 +70,34 @@ describe('simulation core loop', () => {
     expect(after.codePerSecond).toBeGreaterThan(before.codePerSecond);
   });
 
+  it('keeps milestone-locked upgrades unavailable until their requirement is met', () => {
+    const initial = createInitialGameState(0);
+    const lockedAttempt = purchaseWorkshopUpgrade(
+      {
+        ...initial,
+        resources: {
+          ...initial.resources,
+          cash: 200,
+        },
+      },
+      'snack-cart',
+    );
+    const unlockedAttempt = purchaseWorkshopUpgrade(
+      {
+        ...initial,
+        employeeCount: 2,
+        resources: {
+          ...initial.resources,
+          cash: 200,
+        },
+      },
+      'snack-cart',
+    );
+
+    expect(lockedAttempt.workshopUpgrades?.['snack-cart']).toBeUndefined();
+    expect(unlockedAttempt.workshopUpgrades?.['snack-cart']).toBe(1);
+  });
+
   it('caps offline progress to a safe maximum window', () => {
     const initial = createInitialGameState(0);
     const advanced = advanceGameState(initial, {
