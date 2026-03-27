@@ -5,8 +5,8 @@
   "type": "module",
   "packageManager": "yarn@4.9.2",
   "scripts": {
-    "dev": "granite dev",
-    "build": "granite build",
+    "dev": "node ./node_modules/@apps-in-toss/web-framework/bin.js dev",
+    "build": "node ./node_modules/@apps-in-toss/web-framework/bin.js build",
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "test": "vitest run",
