@@ -10,7 +10,7 @@ describe('createPhaserStageSnapshot', () => {
     expect(snapshot.officeLevel).toBe(1);
     expect(snapshot.workerCount).toBe(1);
     expect(snapshot.processMode).toBe('agile');
-    expect(snapshot.cropPatchCount).toBeGreaterThanOrEqual(2);
+    expect(snapshot.workstationCount).toBeGreaterThanOrEqual(2);
     expect(snapshot.projectProgressLabel).toBe('0%');
   });
 
@@ -37,9 +37,9 @@ describe('createPhaserStageSnapshot', () => {
     expect(snapshot.workerCount).toBe(4);
     expect(snapshot.officeLevel).toBe(3);
     expect(snapshot.projectProgressLabel).toBe('76%');
-    expect(snapshot.warmDeskLevel).toBe(2);
-    expect(snapshot.snackCartLevel).toBe(1);
-    expect(snapshot.showcaseWallLevel).toBe(2);
-    expect(snapshot.deliveryCrateCount).toBeGreaterThan(0);
+    expect(snapshot.automationLevel).toBe(2);
+    expect(snapshot.refreshStationLevel).toBe(1);
+    expect(snapshot.releaseArchiveLevel).toBe(2);
+    expect(snapshot.serverRackCount).toBeGreaterThan(0);
   });
 });

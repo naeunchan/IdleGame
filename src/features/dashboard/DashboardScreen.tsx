@@ -35,9 +35,9 @@ import {
 } from '@/shared/utils/format';
 
 const officeLabels = {
-  1: '차고 오두막',
-  2: '골목 스튜디오',
-  3: '동네 개발사',
+  1: '1인 개발 데스크',
+  2: '협업 스튜디오',
+  3: '제품 팀 플로어',
 } as const;
 
 function formatWorkshopUpgradeEffect(definition: WorkshopUpgradeDefinition, level: number) {
@@ -108,7 +108,7 @@ export function DashboardScreen() {
       !gameState.team.some((member) => member.id === candidate.id) &&
       candidate.unlockAtProjects > gameState.completedProjects + 1,
   );
-  const officeLabel = officeLabels[gameState.officeLevel as keyof typeof officeLabels] ?? '성장 중인 작업실';
+  const officeLabel = officeLabels[gameState.officeLevel as keyof typeof officeLabels] ?? '확장 중인 스튜디오';
   const currentProjectProgress = Math.min(
     100,
     (gameState.currentProject.progress / gameState.currentProject.requiredCode) * 100,
@@ -127,7 +127,7 @@ export function DashboardScreen() {
   );
   const focusButtonNote = canStartFocusSession
     ? '집중력 14 소모 · 진행도 16 즉시 추가'
-    : `집중력이 ${formatCompactNumber(focusGap)} 더 필요 · 자동 회복 또는 간식 휴식`;
+    : `집중력이 ${formatCompactNumber(focusGap)} 더 필요 · 자동 회복 또는 리프레시 브레이크`;
   const snackButtonNote = canBuySnackBreak
     ? '14원 사용 · 집중력 22 회복'
     : `운영 자금 ${formatCompactNumber(snackGap)}원 더 필요`;
@@ -138,7 +138,7 @@ export function DashboardScreen() {
   const saveTimestampLabel = saveSummary ? formatDateTime(saveSummary.savedAt) : '저장 기록 없음';
   const saveProgressLabel = saveSummary
     ? `${saveSummary.employeeCount}마리 · 납품 ${saveSummary.completedProjects}건`
-    : '새 작업실을 시작하면 자동 저장됩니다';
+    : '새 세션을 시작하면 자동 저장됩니다';
   const saveResourcesLabel = saveSummary
     ? `${formatCompactNumber(saveSummary.cash)}원 · 평판 ${formatCompactNumber(saveSummary.reputation)}`
     : '아직 저장된 자원이 없습니다';
@@ -217,7 +217,7 @@ export function DashboardScreen() {
           : '현재 후보를 모두 맞이했습니다',
     },
     {
-      label: '작업실 단계',
+      label: '스튜디오 단계',
       value: officeLabel,
       note: `${gameState.employeeCount}마리 팀 · 납품 ${gameState.completedProjects}건`,
     },
@@ -225,7 +225,7 @@ export function DashboardScreen() {
 
   const resourceCards = [
     {
-      label: '코드 꾸러미',
+      label: '누적 코드',
       value: formatCompactNumber(gameState.resources.code),
       note: `초당 ${formatCompactNumber(simulation.codePerSecond)} 생산`,
     },
@@ -237,10 +237,10 @@ export function DashboardScreen() {
     {
       label: '운영 자금',
       value: `${formatCompactNumber(gameState.resources.cash)}원`,
-      note: '고용, 간식, 작업실 정비에 사용',
+      note: '고용, 휴식, 시스템 업그레이드에 사용',
     },
     {
-      label: '동네 평판',
+      label: '제품 평판',
       value: formatCompactNumber(gameState.resources.reputation),
       note: `보상 배수 x${simulation.rewardMultiplier}`,
     },
@@ -250,7 +250,7 @@ export function DashboardScreen() {
       return;
     }
 
-    const shouldReset = window.confirm('현재 진행을 초기화하고 새 작업실에서 다시 시작할까요?');
+    const shouldReset = window.confirm('현재 진행을 초기화하고 새 스튜디오에서 다시 시작할까요?');
 
     if (!shouldReset) {
       return;
@@ -263,21 +263,21 @@ export function DashboardScreen() {
     <main className="app-shell">
       <section className="hero-card">
         <div className="eyebrow-row">
-          <span className="eyebrow">Cozy Dev Lodge</span>
+          <span className="eyebrow">DEV STUDIO</span>
           <span className="status-pill">{platform.isPortrait ? '도트 세로 모드' : '도트 가로 모드'}</span>
         </div>
 
         <div className="hero-copy">
           <div className="hero-copy__lead">
             <div className="season-banner">
-              <span>봄 1일차</span>
+              <span>Sprint 01</span>
               <span>{gameState.employeeCount}마리 근무 중</span>
               <span>{currentProcess?.name ?? '프로세스 미정'}</span>
             </div>
-            <h1>개발견 키우기</h1>
+            <h1>개발 스튜디오</h1>
             <p>
-              새끼 개발견 한 마리로 시작해, 작은 납품을 반복하고 팀을 늘리며 작업실을 포근한 회사로 키워
-              나가는 방치형 경영 시뮬레이션입니다.
+              창업견 한 마리로 시작해 작은 기능을 배포하고 팀을 늘리며 실제 개발 시스템이 굴러가는 스튜디오로
+              키워 나가는 방치형 경영 시뮬레이션입니다.
             </p>
           </div>
 
@@ -302,12 +302,12 @@ export function DashboardScreen() {
             <div className="hero-badge">
               <span className="label">진행 중</span>
               <strong>{gameState.currentProject.name}</strong>
-              <small>{etaMs ? `${formatDurationMs(etaMs)} 후 납품 예상` : '팀을 정비 중입니다'}</small>
+              <small>{etaMs ? `${formatDurationMs(etaMs)} 후 배포 예상` : '백로그를 정리 중입니다'}</small>
             </div>
             <div className="hero-badge">
-              <span className="label">작업실 단계</span>
+              <span className="label">스튜디오 단계</span>
               <strong>{officeLabel}</strong>
-              <small>{gameState.completedProjects}건의 작은 배포가 공간을 키웁니다</small>
+              <small>{gameState.completedProjects}건의 배포가 팀 공간을 확장합니다</small>
             </div>
           </div>
 
@@ -325,14 +325,14 @@ export function DashboardScreen() {
 
       <section className="stage-shell">
         <div className="stage-shell__copy">
-          <span className="label">농장 겸 작업실</span>
-          <strong>{officeLabel} 앞 개발 밭</strong>
+          <span className="label">현재 스튜디오</span>
+          <strong>{officeLabel} 운영 화면</strong>
           <small>
-            납품 횟수가 쌓일수록 더 큰 작업실로 확장됩니다. 현재 팀 하모니는 x
+            팀 규모, 프로세스, 시스템 업그레이드가 작업 공간에 반영됩니다. 현재 팀 하모니는 x
             {formatCompactNumber(simulation.teamHarmony)}입니다.
           </small>
           <div className="stage-shell__tags">
-            <span>납품 {gameState.completedProjects}건</span>
+            <span>배포 {gameState.completedProjects}건</span>
             <span>팀원 {gameState.employeeCount}마리</span>
             <span>품질 {formatCompactNumber(simulation.qualityScore)}</span>
           </div>
@@ -355,7 +355,7 @@ export function DashboardScreen() {
           {lastProgressReport ? (
             <div className="offline-banner">
               <div>
-                <strong>쉬는 동안도 작업실이 돌아갔어요</strong>
+                <strong>자리를 비운 동안도 개발이 진행됐습니다</strong>
                 <p>
                   {formatDurationMs(lastProgressReport.elapsedMs)} 동안 코드 {formatCompactNumber(lastProgressReport.codeGained)}
                   , 자금 {formatCompactNumber(lastProgressReport.cashGained)}원, 평판{' '}
@@ -445,7 +445,7 @@ export function DashboardScreen() {
               onClick={buySnackBreak}
               type="button"
             >
-              간식 휴식
+              리프레시 브레이크
               <small>{snackButtonNote}</small>
             </button>
           </div>
@@ -535,7 +535,7 @@ export function DashboardScreen() {
           <div className="panel-header">
             <div>
               <span className="panel-kicker">Contract Board</span>
-              <h2>동네 계약</h2>
+              <h2>반복 목표</h2>
             </div>
             <span>완료 {gameState.stats.totalContractsCompleted}건</span>
           </div>
@@ -576,10 +576,10 @@ export function DashboardScreen() {
           </div>
 
           <div className="panel-note">
-            <strong>반복 보상 루프</strong>
+            <strong>반복 실행 루프</strong>
             <p>
-              계약은 수령 즉시 다음 목표로 교체됩니다. 자동 생산으로 채워지는 계약과 능동 액션 계약이 섞여 있어,
-              방치와 터치 플레이를 번갈아 돌릴 수 있습니다.
+              목표는 수령 즉시 다음 목표로 교체됩니다. 자동 생산으로 채워지는 목표와 능동 액션 목표가 섞여 있어,
+              방치와 직접 플레이를 번갈아 돌릴 수 있습니다.
             </p>
           </div>
         </article>
@@ -588,7 +588,7 @@ export function DashboardScreen() {
           <div className="panel-header">
             <div>
               <span className="panel-kicker">Workshop Upgrades</span>
-              <h2>작업실 정비</h2>
+              <h2>개발 시스템</h2>
             </div>
             <span>영구 보너스 {totalUpgradeLevels}단계</span>
           </div>
@@ -619,7 +619,7 @@ export function DashboardScreen() {
                       {!isUnlocked && unlockMilestone
                         ? `${unlockMilestone.definition.name} 달성 필요`
                         : nextCost === null
-                          ? '정비 완료'
+                          ? '적용 완료'
                           : canBuy
                             ? `${formatCompactNumber(nextCost)}원 투자 가능`
                             : `${formatCompactNumber(nextCost)}원 · ${formatCompactNumber(
@@ -639,7 +639,7 @@ export function DashboardScreen() {
                         : nextCost === null
                           ? '완료'
                           : canBuy
-                            ? '정비'
+                            ? '적용'
                             : '자금 부족'}
                     </button>
                   </div>
@@ -649,7 +649,7 @@ export function DashboardScreen() {
           </div>
 
           <div className="panel-note">
-            <strong>현재 작업실 보정</strong>
+            <strong>현재 시스템 보정</strong>
             <p>
               생산 +{formatCompactNumber(workshopUpgradeEffects.productionMultiplierBonus * 100)}% · 집중 회복 +
               {formatCompactNumber(workshopUpgradeEffects.focusRecoveryBonus)}/s · 보상 +
@@ -745,7 +745,7 @@ export function DashboardScreen() {
           <div className="panel-header">
             <div>
               <span className="panel-kicker">Workshop Status</span>
-              <h2>작업실 상태</h2>
+              <h2>런타임 상태</h2>
             </div>
             <span>{platform.isTossWebView ? 'Toss WebView' : 'Browser'}</span>
           </div>
@@ -790,18 +790,18 @@ export function DashboardScreen() {
               type="button"
             >
               지금 저장
-              <small>현재 작업실 상태를 즉시 저장합니다</small>
+              <small>현재 진행 상태를 즉시 저장합니다</small>
             </button>
             <button className="action-button action-button--secondary" onClick={handleResetGame} type="button">
               새로 시작
-              <small>현재 저장을 초기 작업실 상태로 교체합니다</small>
+              <small>현재 저장을 초기 스튜디오 상태로 교체합니다</small>
             </button>
           </div>
           <div className="panel-note">
             <strong>자동 저장 안내</strong>
             <p>
               진행 변화는 자동 저장되고, 문제가 생기면 지금 저장으로 즉시 기록할 수 있습니다. 새로 시작을 누르면
-              현재 슬롯이 초기 작업실로 바뀝니다.
+              현재 슬롯이 초기 스튜디오 상태로 바뀝니다.
             </p>
           </div>
         </article>

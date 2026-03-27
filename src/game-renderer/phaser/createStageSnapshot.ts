@@ -8,12 +8,12 @@ export interface PhaserStageSnapshot {
   processMode: ProcessMode;
   projectProgressPercent: number;
   projectProgressLabel: string;
-  cropPatchCount: number;
-  deliveryCrateCount: number;
+  workstationCount: number;
+  serverRackCount: number;
   workPace: number;
-  warmDeskLevel: number;
-  snackCartLevel: number;
-  showcaseWallLevel: number;
+  automationLevel: number;
+  refreshStationLevel: number;
+  releaseArchiveLevel: number;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -26,9 +26,9 @@ export function createPhaserStageSnapshot(
 ): PhaserStageSnapshot {
   const requiredCode = Math.max(1, state.currentProject.requiredCode);
   const projectProgressPercent = clamp((state.currentProject.progress / requiredCode) * 100, 0, 100);
-  const warmDeskLevel = getWorkshopUpgradeLevel(state.workshopUpgrades, 'warm-desk');
-  const snackCartLevel = getWorkshopUpgradeLevel(state.workshopUpgrades, 'snack-cart');
-  const showcaseWallLevel = getWorkshopUpgradeLevel(state.workshopUpgrades, 'showcase-wall');
+  const automationLevel = getWorkshopUpgradeLevel(state.workshopUpgrades, 'warm-desk');
+  const refreshStationLevel = getWorkshopUpgradeLevel(state.workshopUpgrades, 'snack-cart');
+  const releaseArchiveLevel = getWorkshopUpgradeLevel(state.workshopUpgrades, 'showcase-wall');
 
   return {
     officeLevel: state.officeLevel,
@@ -36,11 +36,11 @@ export function createPhaserStageSnapshot(
     processMode: state.currentProcess,
     projectProgressPercent,
     projectProgressLabel: `${Math.round(projectProgressPercent)}%`,
-    cropPatchCount: clamp(2 + state.officeLevel + Math.floor(state.completedProjects / 2), 2, 6),
-    deliveryCrateCount: clamp(Math.floor(state.completedProjects / 2) + showcaseWallLevel, 0, 4),
+    workstationCount: clamp(2 + state.officeLevel + Math.floor(state.completedProjects / 2), 2, 6),
+    serverRackCount: clamp(Math.floor(state.completedProjects / 2) + releaseArchiveLevel, 0, 4),
     workPace: clamp(simulation.codePerSecond / 5, 0.8, 2.4),
-    warmDeskLevel,
-    snackCartLevel,
-    showcaseWallLevel,
+    automationLevel,
+    refreshStationLevel,
+    releaseArchiveLevel,
   };
 }
