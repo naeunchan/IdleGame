@@ -14,7 +14,7 @@ export function OnboardingHint({ guide }: OnboardingHintProps) {
   return (
     <aside className="floating-hint">
       <div className="floating-hint__header">
-        <span className="floating-hint__eyebrow">마을 게시판</span>
+        <span className="floating-hint__eyebrow">실행 가이드</span>
         <span className="floating-hint__status">
           {guide.completedSteps} / {guide.totalSteps} 단계
         </span>

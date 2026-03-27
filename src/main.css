@@ -4,27 +4,23 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --page-max-width: 500px;
-  --sky-top: #83c8f2;
-  --sky-mid: #bfe7ff;
-  --sky-bottom: #f5e29a;
-  --cloud: #f7fbff;
-  --grass: #86b85f;
-  --grass-deep: #5c8739;
-  --soil: #9d693a;
-  --soil-deep: #6f4525;
-  --wood: #a86e3f;
-  --wood-deep: #6b4324;
-  --paper: #f7e8bf;
-  --paper-soft: #fff5db;
-  --paper-shadow: #e5d09a;
-  --ink: #4c2d1a;
-  --sub-ink: #73513a;
-  --accent: #d18c44;
-  --accent-soft: #f0ce71;
-  --water: #8ec8ee;
-  --leaf: #7baa57;
-  --leaf-deep: #4f722e;
-  --shadow: rgba(85, 54, 30, 0.18);
+  --bg: #f4f5f7;
+  --bg-soft: #eef2f6;
+  --panel: #ffffff;
+  --panel-alt: #f8fafc;
+  --panel-strong: #e8eef7;
+  --border: #d5dde7;
+  --border-strong: #1f2937;
+  --text: #111827;
+  --muted: #5b6474;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+  --accent-strong: #1d4ed8;
+  --success: #15803d;
+  --success-soft: #dcfce7;
+  --warn: #b45309;
+  --warn-soft: #fef3c7;
+  --shadow: rgba(15, 23, 42, 0.08);
 }
 
 * {
@@ -32,42 +28,18 @@
 }
 
 html {
-  color: var(--ink);
-  font-family: 'Gowun Batang', serif;
   background:
-    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 40%, var(--sky-bottom) 76%, #dbc76c 100%);
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 22%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+  color: var(--text);
+  font-family: 'IBM Plex Sans KR', sans-serif;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  position: relative;
-  isolation: isolate;
-}
-
-body::before,
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-}
-
-body::before {
-  background:
-    radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.92), transparent 10%),
-    radial-gradient(circle at 30% 16%, rgba(255, 255, 255, 0.76), transparent 8%),
-    radial-gradient(circle at 74% 12%, rgba(255, 255, 255, 0.88), transparent 10%),
-    radial-gradient(circle at 86% 18%, rgba(255, 255, 255, 0.66), transparent 8%);
-  opacity: 0.86;
-}
-
-body::after {
-  background:
-    linear-gradient(180deg, transparent 0%, transparent 70%, rgba(124, 171, 87, 0.34) 70%, rgba(124, 171, 87, 0.34) 74%, transparent 74%),
-    radial-gradient(120% 70% at 15% 100%, rgba(128, 182, 90, 0.9), transparent 62%),
-    radial-gradient(120% 70% at 85% 100%, rgba(92, 139, 57, 0.84), transparent 64%);
+  background: transparent;
 }
 
 button,
@@ -79,7 +51,6 @@ select {
 
 #root {
   min-height: 100vh;
-  position: relative;
 }
 
 .app-shell {
@@ -99,51 +70,39 @@ select {
 .stage-shell,
 .footer-strip,
 .floating-hint {
-  position: relative;
-  overflow: hidden;
-  border: 4px solid var(--wood-deep);
-  border-radius: 12px;
+  border: 2px solid var(--border-strong);
+  border-radius: 18px;
+  background: var(--panel);
   box-shadow:
-    0 6px 0 rgba(103, 64, 34, 0.95),
-    0 14px 26px var(--shadow);
+    0 10px 24px var(--shadow),
+    0 2px 0 rgba(255, 255, 255, 0.85) inset;
 }
 
-.hero-card::before,
-.panel::before,
-.stage-shell::before,
-.footer-strip::before,
-.floating-hint::before {
-  content: '';
-  position: absolute;
-  inset: 4px;
-  border: 2px solid rgba(255, 245, 217, 0.45);
-  border-radius: 6px;
-  pointer-events: none;
+.hero-card,
+.panel,
+.stage-shell,
+.floating-hint {
+  overflow: hidden;
 }
 
 .hero-card {
   padding: 18px;
   background:
-    linear-gradient(180deg, rgba(255, 250, 237, 0.98), rgba(245, 226, 171, 0.98));
-}
-
-.hero-card::after {
-  content: '';
-  position: absolute;
-  left: -6%;
-  right: -6%;
-  bottom: -12px;
-  height: 72px;
-  background:
-    linear-gradient(180deg, rgba(134, 184, 95, 0.78), rgba(92, 135, 57, 0.96));
-  clip-path: polygon(0 68%, 8% 56%, 18% 66%, 29% 51%, 41% 64%, 54% 48%, 67% 61%, 78% 50%, 88% 60%, 100% 44%, 100% 100%, 0 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.96));
 }
 
 .eyebrow-row,
-.panel-header {
+.panel-header,
+.project-card__header,
+.project-card__footer,
+.goal-card__header,
+.goal-card__footer,
+.upgrade-card__footer,
+.candidate-card__footer,
+.floating-hint__header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
 }
 
@@ -152,32 +111,61 @@ select {
 .panel-header > span,
 .panel-kicker,
 .label,
-.floating-hint__eyebrow {
+.floating-hint__eyebrow,
+.journal-card span,
+.hero-badge span,
+.harvest-card span,
+.stat-card span,
+.roster-card span,
+.contract-card span,
+.upgrade-card span,
+.candidate-card span,
+.process-card span,
+.empty-card span,
+.timeline-item span {
   font-family: 'Pixelify Sans', sans-serif;
   font-size: 12px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.eyebrow,
+.panel-kicker,
+.label,
+.floating-hint__eyebrow,
+.journal-card span,
+.hero-badge span,
+.harvest-card span,
+.stat-card span,
+.roster-card span,
+.contract-card span,
+.upgrade-card span,
+.candidate-card span,
+.process-card span,
+.empty-card span,
+.timeline-item span {
   color: var(--accent);
 }
 
 .status-pill,
-.panel-header > span {
+.panel-header > span,
+.season-banner span,
+.stage-shell__tags span,
+.breed-stat-row small,
+.floating-hint__status,
+.floating-hint__meta span,
+.guide-step span,
+.roster-chip,
+.upgrade-card__meta small,
+.process-stats small {
   padding: 6px 10px;
-  border-radius: 6px;
-  background: var(--paper-soft);
-  border: 2px solid rgba(107, 67, 36, 0.16);
-  box-shadow: inset 0 -2px 0 rgba(229, 208, 154, 0.9);
-}
-
-.panel-kicker {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--wood-deep);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--muted);
 }
 
 .hero-copy {
-  position: relative;
-  z-index: 1;
   display: grid;
   gap: 14px;
   margin-top: 12px;
@@ -190,23 +178,11 @@ select {
 
 .season-banner,
 .stage-shell__tags,
-.breed-stat-row {
+.breed-stat-row,
+.floating-hint__meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.season-banner span,
-.stage-shell__tags span,
-.breed-stat-row small {
-  padding: 5px 8px;
-  border-radius: 6px;
-  border: 2px solid rgba(107, 67, 36, 0.18);
-  background: rgba(255, 249, 234, 0.9);
-  box-shadow: inset 0 -2px 0 rgba(229, 208, 154, 0.84);
-  font-family: 'Pixelify Sans', sans-serif;
-  font-size: 12px;
-  color: var(--sub-ink);
 }
 
 .hero-copy h1,
@@ -215,16 +191,30 @@ select {
 .floating-hint strong,
 .panel-note strong,
 .journal-card strong,
+.hero-badge strong,
+.harvest-card strong,
 .breed-card strong,
-.timeline-item strong {
+.timeline-item strong,
+.project-card strong,
+.goal-card strong,
+.stat-card strong,
+.roster-card strong,
+.contract-card strong,
+.upgrade-card strong,
+.candidate-card strong,
+.process-card strong,
+.empty-card strong,
+.footer-strip strong,
+.guide-step strong {
   margin: 0;
-  font-family: 'Pixelify Sans', sans-serif;
-  color: var(--ink);
+  color: var(--text);
+  font-weight: 700;
 }
 
 .hero-copy h1 {
-  font-size: clamp(40px, 12vw, 58px);
-  line-height: 0.92;
+  font-size: clamp(34px, 10vw, 52px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
 }
 
 .hero-copy p,
@@ -235,28 +225,60 @@ select {
 .panel-note p,
 .breed-card p,
 .role-pill small,
-.floating-hint p {
+.floating-hint p,
+.project-card p,
+.goal-card p,
+.contract-card p,
+.upgrade-card p,
+.candidate-card p,
+.empty-card p,
+.timeline-item p,
+.timeline-item small,
+.metric-list span,
+.metric-list strong,
+.project-card__header small,
+.project-card__footer span,
+.goal-card__header small,
+.goal-card__footer small,
+.goal-card__footer span,
+.roster-card small,
+.contract-card__meta small,
+.upgrade-card__footer small,
+.candidate-card__footer small,
+.process-card small,
+.guide-step small {
   margin: 0;
   line-height: 1.55;
-  color: var(--sub-ink);
+  color: var(--muted);
 }
 
 .journal-strip,
 .hero-badge-grid,
-.harvest-strip {
+.harvest-strip,
+.metric-list,
+.timeline,
+.breed-grid,
+.role-grid,
+.process-list,
+.contract-list,
+.upgrade-list,
+.roster-list,
+.candidate-list,
+.stat-grid,
+.grid-panels,
+.guide-step-list,
+.action-row {
   display: grid;
   gap: 10px;
 }
 
-.journal-strip {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
+.journal-strip,
 .hero-badge-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.harvest-strip {
+.harvest-strip,
+.stat-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -267,13 +289,22 @@ select {
 .breed-card,
 .role-pill,
 .timeline-item,
-.metric-list li {
-  background:
-    linear-gradient(180deg, var(--paper-soft), var(--paper));
-  border: 3px solid rgba(107, 67, 36, 0.16);
-  box-shadow:
-    inset 0 -3px 0 rgba(229, 208, 154, 0.94),
-    0 3px 0 rgba(133, 88, 51, 0.16);
+.metric-list li,
+.offline-banner,
+.project-card,
+.goal-card,
+.stat-card,
+.roster-card,
+.contract-card,
+.upgrade-card,
+.candidate-card,
+.process-card,
+.empty-card,
+.guide-step {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel-alt);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
 }
 
 .journal-card,
@@ -282,44 +313,55 @@ select {
 .panel-note,
 .breed-card,
 .role-pill,
-.timeline-item {
-  padding: 13px;
-  border-radius: 8px;
+.timeline-item,
+.offline-banner,
+.project-card,
+.goal-card,
+.roster-card,
+.contract-card,
+.upgrade-card,
+.candidate-card,
+.process-card,
+.empty-card,
+.guide-step {
+  padding: 14px;
 }
 
-.journal-card span,
-.harvest-card span,
-.hero-badge span,
-.breed-card span,
-.role-pill span,
-.timeline-item span {
-  display: block;
-  font-family: 'Pixelify Sans', sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  color: var(--accent);
+.metric-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
 }
 
-.journal-card strong,
-.hero-badge strong,
-.harvest-card strong,
-.footer-strip strong {
-  display: block;
-  margin-top: 6px;
+.metric-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+}
+
+.metric-list strong {
+  text-align: right;
+  color: var(--text);
+}
+
+.metric-list--compact,
+.timeline,
+.role-grid,
+.breed-grid {
+  margin-top: 14px;
+}
+
+.panel-note strong,
+.timeline-item strong {
   font-size: 22px;
-}
-
-.hero-badge small,
-.harvest-card small,
-.journal-card small {
-  display: block;
-  margin-top: 5px;
 }
 
 .stage-shell {
   padding: 14px;
   background:
-    linear-gradient(180deg, rgba(244, 232, 189, 0.78), rgba(231, 203, 142, 0.95));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 244, 250, 0.98));
 }
 
 .stage-shell__copy {
@@ -335,78 +377,23 @@ select {
 .stage-shell__viewport {
   width: 100%;
   height: clamp(280px, 56vw, 340px);
-  border-radius: 8px;
-  border: 3px solid rgba(107, 67, 36, 0.16);
+  border-radius: 14px;
+  border: 1px solid var(--border);
   background:
-    linear-gradient(180deg, rgba(126, 196, 238, 0.86), rgba(244, 227, 144, 0.72));
-  box-shadow: inset 0 -3px 0 rgba(229, 208, 154, 0.9);
-}
-
-.grid-panels {
-  display: grid;
-  gap: 16px;
-  align-items: start;
+    linear-gradient(180deg, #eef4fb 0%, #dde7f2 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 .panel {
   padding: 16px;
   background:
-    linear-gradient(180deg, rgba(250, 239, 204, 0.98), rgba(243, 225, 169, 0.98));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 251, 0.98));
 }
 
 .panel h2 {
   margin-top: 3px;
   font-size: 30px;
-}
-
-.metric-list,
-.timeline,
-.breed-grid,
-.role-grid,
-.process-list,
-.contract-list,
-.upgrade-list,
-.roster-list,
-.candidate-list,
-.stat-grid {
-  display: grid;
-  gap: 10px;
-}
-
-.metric-list {
-  list-style: none;
-  margin: 14px 0 0;
-  padding: 0;
-}
-
-.metric-list li {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 12px;
-  border-radius: 8px;
-}
-
-.metric-list span {
-  color: var(--sub-ink);
-}
-
-.metric-list strong {
-  color: var(--leaf-deep);
-  text-align: right;
-}
-
-.metric-list--compact {
-  margin-bottom: 14px;
-}
-
-.panel-note {
-  margin-top: 14px;
-}
-
-.panel-note strong {
-  font-size: 24px;
+  line-height: 1.05;
 }
 
 .panel--wide {
@@ -414,72 +401,25 @@ select {
   gap: 14px;
 }
 
-.offline-banner,
-.project-card,
-.goal-card,
-.stat-card,
-.roster-card,
-.contract-card,
-.upgrade-card,
-.candidate-card,
-.process-card,
-.empty-card {
-  background:
-    linear-gradient(180deg, var(--paper-soft), var(--paper));
-  border: 3px solid rgba(107, 67, 36, 0.16);
-  border-radius: 8px;
-  box-shadow:
-    inset 0 -3px 0 rgba(229, 208, 154, 0.94),
-    0 3px 0 rgba(133, 88, 51, 0.16);
-}
-
-.offline-banner,
-.project-card,
-.goal-card,
-.roster-card,
-.contract-card,
-.upgrade-card,
-.candidate-card,
-.process-card,
-.empty-card {
-  padding: 14px;
-}
-
 .offline-banner {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  background:
-    linear-gradient(180deg, #fce7ab, #f2cd78);
+  background: var(--accent-soft);
 }
 
-.offline-banner strong,
-.project-card strong,
-.goal-card strong,
-.stat-card strong,
-.roster-card strong,
-.contract-card strong,
-.upgrade-card strong,
-.candidate-card strong,
-.process-card strong,
-.empty-card strong {
-  display: block;
-  margin-top: 4px;
-  font-family: 'Pixelify Sans', sans-serif;
-  color: var(--ink);
+.goal-card {
+  display: grid;
+  gap: 12px;
+  background: #f8fbff;
 }
 
-.offline-banner p,
-.project-card p,
-.goal-card p,
-.contract-card p,
-.upgrade-card p,
-.candidate-card p,
-.empty-card p {
-  margin: 6px 0 0;
-  line-height: 1.5;
-  color: var(--sub-ink);
+.goal-card__footer {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .project-card {
@@ -487,95 +427,18 @@ select {
   gap: 12px;
 }
 
-.goal-card {
-  display: grid;
-  gap: 12px;
-  background:
-    linear-gradient(180deg, #f4ebc7, #eed89c);
-}
-
-.project-card__header,
-.project-card__footer,
-.upgrade-card__footer,
-.candidate-card__footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-}
-
-.project-card__header small,
-.project-card__footer span,
-.upgrade-card__footer small,
-.candidate-card__footer small {
-  color: var(--sub-ink);
-}
-
-.goal-card__header,
-.goal-card__footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: flex-start;
-}
-
-.goal-card__header small,
-.goal-card__footer small,
-.goal-card__footer span {
-  color: var(--sub-ink);
-}
-
-.goal-card__footer {
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: rgba(255, 249, 234, 0.8);
-  border: 2px solid rgba(107, 67, 36, 0.12);
-}
-
 .progress-track {
   overflow: hidden;
-  height: 16px;
+  height: 14px;
   border-radius: 999px;
-  background: rgba(107, 67, 36, 0.14);
-  border: 2px solid rgba(107, 67, 36, 0.18);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
+  border: 1px solid var(--border);
+  background: #e5e7eb;
 }
 
 .progress-track__fill {
   height: 100%;
   border-radius: inherit;
-  background:
-    linear-gradient(90deg, var(--leaf), var(--accent-soft));
-  box-shadow:
-    inset 0 -2px 0 rgba(76, 45, 26, 0.18),
-    0 0 10px rgba(240, 206, 113, 0.35);
-}
-
-.stat-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.stat-card {
-  padding: 12px;
-}
-
-.stat-card span,
-.roster-card span,
-.contract-card span,
-.upgrade-card span,
-.candidate-card span,
-.process-card span,
-.empty-card span {
-  display: block;
-  font-family: 'Pixelify Sans', sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  color: var(--accent);
-}
-
-.action-row {
-  display: grid;
-  gap: 10px;
+  background: linear-gradient(90deg, var(--accent), #38bdf8);
 }
 
 .action-button {
@@ -583,38 +446,43 @@ select {
   gap: 4px;
   width: 100%;
   padding: 12px 14px;
-  border: 3px solid var(--wood-deep);
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, #f7d992, #eebc5f);
-  box-shadow:
-    inset 0 -3px 0 rgba(107, 67, 36, 0.24),
-    0 4px 0 rgba(107, 67, 36, 0.34);
-  color: var(--ink);
-  font-family: 'Pixelify Sans', sans-serif;
-  font-size: 14px;
+  border: 2px solid var(--border-strong);
+  border-radius: 14px;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
   text-align: left;
   cursor: pointer;
+  transition:
+    transform 120ms ease,
+    background 120ms ease,
+    opacity 120ms ease;
 }
 
 .action-button small {
-  font-family: 'Gowun Batang', serif;
-  font-size: 13px;
-  color: var(--sub-ink);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.action-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: var(--accent-strong);
 }
 
 .action-button:disabled {
   cursor: not-allowed;
-  opacity: 0.58;
-  box-shadow:
-    inset 0 -3px 0 rgba(107, 67, 36, 0.1),
-    0 3px 0 rgba(107, 67, 36, 0.18);
+  opacity: 0.5;
 }
 
 .action-button--secondary,
 .action-button--ghost {
-  background:
-    linear-gradient(180deg, rgba(255, 245, 219, 0.98), rgba(240, 224, 173, 0.98));
+  background: var(--panel-alt);
+  color: var(--text);
+}
+
+.action-button--secondary small,
+.action-button--ghost small {
+  color: var(--muted);
 }
 
 .action-button--small {
@@ -647,27 +515,16 @@ select {
   align-items: center;
 }
 
-.roster-card small,
-.candidate-card small,
-.upgrade-card small,
-.process-card small {
-  color: var(--sub-ink);
-}
-
 .roster-chip {
-  padding: 6px 8px;
-  border-radius: 999px;
-  background: rgba(122, 170, 87, 0.12);
-  border: 2px solid rgba(92, 135, 57, 0.22);
-  color: var(--leaf-deep);
-  font-family: 'Pixelify Sans', sans-serif;
-  font-size: 12px;
+  color: var(--accent-strong);
 }
 
 .candidate-card__copy,
 .contract-card__copy,
 .upgrade-card__copy,
-.process-stats {
+.process-stats,
+.contract-card__meta,
+.upgrade-card__meta {
   display: grid;
   gap: 6px;
 }
@@ -675,90 +532,22 @@ select {
 .contract-card {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  background:
-    linear-gradient(180deg, rgba(243, 238, 208, 0.98), rgba(231, 219, 169, 0.98));
 }
 
-.contract-card--ready {
-  background:
-    linear-gradient(180deg, #e8f7da, #d8edba);
-}
-
-.contract-card__meta {
-  display: grid;
-  gap: 6px;
-}
-
-.contract-card__meta small {
-  color: var(--sub-ink);
+.contract-card--ready,
+.process-card--active,
+.guide-step--done,
+.timeline-item--done {
+  background: var(--success-soft);
 }
 
 .upgrade-card {
-  background:
-    linear-gradient(180deg, rgba(252, 244, 214, 0.98), rgba(239, 221, 166, 0.98));
+  background: #f8fafc;
 }
 
-.upgrade-card__meta {
-  display: grid;
-  gap: 6px;
-}
-
-.upgrade-card__meta small {
-  padding: 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.46);
-  border: 2px solid rgba(107, 67, 36, 0.08);
-}
-
-.process-card--active {
-  background:
-    linear-gradient(180deg, #e8f7da, #d8edba);
-}
-
-.process-stats {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
+.upgrade-card__meta small,
 .process-stats small {
-  padding: 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.46);
-  border: 2px solid rgba(107, 67, 36, 0.08);
-}
-
-.breed-grid {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-top: 14px;
-}
-
-.breed-card strong,
-.timeline-item strong {
-  margin-top: 6px;
-  font-size: 24px;
-}
-
-.breed-card p {
-  margin-top: 8px;
-}
-
-.timeline-item p,
-.timeline-item small {
-  margin: 6px 0 0;
-  line-height: 1.5;
-  color: var(--sub-ink);
-}
-
-.role-grid {
-  margin-top: 14px;
-}
-
-.role-pill small {
-  display: block;
-  margin-top: 6px;
-}
-
-.timeline {
-  margin-top: 14px;
+  border-radius: 12px;
 }
 
 .timeline-item {
@@ -772,174 +561,84 @@ select {
   left: 0;
   top: 10px;
   bottom: 10px;
-  width: 8px;
-  background: rgba(107, 67, 36, 0.16);
+  width: 6px;
+  border-radius: 999px;
+  background: #cbd5e1;
 }
 
-.timeline-item--active {
-  background:
-    linear-gradient(180deg, #fbe6ae, #f0cb78);
+.timeline-item--active,
+.guide-step--current {
+  background: var(--warn-soft);
 }
 
 .timeline-item--active::before {
-  background: var(--accent);
-}
-
-.timeline-item--done {
-  background:
-    linear-gradient(180deg, #e7f6dc, #cfe7b6);
+  background: var(--warn);
 }
 
 .timeline-item--done::before {
-  background: var(--leaf-deep);
+  background: var(--success);
 }
 
-.timeline-item--queued {
-  background:
-    linear-gradient(180deg, #e4f3ff, #c1dff4);
+.timeline-item--queued,
+.guide-step--locked {
+  background: var(--panel-alt);
 }
 
 .timeline-item--queued::before {
-  background: var(--water);
+  background: var(--accent);
 }
 
 .footer-strip {
   display: grid;
   gap: 10px;
-  padding: 10px;
-  background:
-    linear-gradient(180deg, #a56a37, #7a4a26);
+  padding: 12px;
+  background: var(--border-strong);
 }
 
 .footer-strip > div {
   padding: 12px;
-  border-radius: 8px;
-  background: rgba(255, 244, 214, 0.14);
-  border: 2px solid rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .footer-strip .label,
 .footer-strip strong {
-  color: #fff6dc;
+  color: #ffffff;
 }
 
 .floating-hint {
   width: 100%;
   padding: 14px 16px;
   background:
-    linear-gradient(180deg, #f6d891, #ebc166);
-}
-
-.floating-hint__header {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-}
-
-.floating-hint::after {
-  content: '';
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  width: 12px;
-  height: 12px;
-  background: var(--accent);
-  box-shadow:
-    14px 0 0 rgba(255, 247, 222, 0.72),
-    7px 7px 0 rgba(255, 247, 222, 0.72);
-}
-
-.floating-hint__eyebrow {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.floating-hint__status {
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 2px solid rgba(107, 67, 36, 0.18);
-  background: rgba(255, 249, 234, 0.72);
-  color: var(--wood-deep);
-  font-family: 'Pixelify Sans', sans-serif;
-  font-size: 12px;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.98));
 }
 
 .floating-hint strong {
   display: block;
-  font-size: 25px;
+  font-size: 24px;
 }
 
 .floating-hint p {
   margin-top: 8px;
 }
 
-.floating-hint__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.floating-hint__meta span,
-.guide-step span {
-  padding: 5px 8px;
-  border-radius: 6px;
-  background: rgba(255, 249, 234, 0.72);
-  border: 2px solid rgba(107, 67, 36, 0.12);
-  color: var(--sub-ink);
-  font-family: 'Pixelify Sans', sans-serif;
-  font-size: 12px;
-}
-
-.progress-track--hint {
-  margin-top: 12px;
-}
-
 .guide-step-list {
-  display: grid;
-  gap: 8px;
   margin-top: 12px;
 }
 
 .guide-step {
   display: grid;
   gap: 5px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 2px solid rgba(107, 67, 36, 0.12);
-  background: rgba(255, 250, 236, 0.76);
 }
 
 .guide-step strong {
-  margin: 0;
   font-size: 18px;
-}
-
-.guide-step small {
-  color: var(--sub-ink);
-}
-
-.guide-step--done {
-  background: rgba(228, 245, 214, 0.92);
-}
-
-.guide-step--current {
-  background: rgba(255, 246, 207, 0.92);
-}
-
-.guide-step--locked {
-  background: rgba(253, 244, 223, 0.82);
 }
 
 @media (min-width: 720px) {
   .app-shell {
     width: min(100%, 1120px);
-  }
-
-  .hero-badge-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .harvest-strip {
@@ -957,7 +656,26 @@ select {
 
 @media (max-width: 520px) {
   .journal-strip,
-  .hero-badge-grid {
+  .hero-badge-grid,
+  .harvest-strip,
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-card__header,
+  .project-card__footer,
+  .goal-card__header,
+  .goal-card__footer,
+  .upgrade-card__footer,
+  .candidate-card__footer,
+  .panel-header,
+  .eyebrow-row,
+  .floating-hint__header {
+    flex-direction: column;
+  }
+
+  .contract-card,
+  .roster-card {
     grid-template-columns: 1fr;
   }
 }
@@ -978,24 +696,6 @@ select {
   }
 
   .stage-shell__viewport {
-    height: 272px;
-  }
-
-  .project-card__header,
-  .project-card__footer,
-  .goal-card__header,
-  .goal-card__footer,
-  .contract-card,
-  .upgrade-card__footer,
-  .candidate-card__footer,
-  .offline-banner,
-  .roster-card {
-    grid-template-columns: 1fr;
-    display: grid;
-  }
-
-  .stat-grid,
-  .process-stats {
-    grid-template-columns: 1fr;
+    height: 260px;
   }
 }

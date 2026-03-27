@@ -43,11 +43,11 @@ function createFirstProjectGoal(state: GameState): OnboardingGoal {
     id: 'first-project',
     title: '첫 납품을 마무리하세요',
     description: `${state.currentProject.name} 진행도를 끝까지 채우면 자금과 평판이 열립니다.`,
-    helper:
-      state.resources.focus >= 14
-        ? '집중 세션으로 진행도 16을 즉시 올릴 수 있습니다.'
+      helper:
+        state.resources.focus >= 14
+          ? '집중 세션으로 진행도 16을 즉시 올릴 수 있습니다.'
         : snackReady
-          ? '집중력이 부족하면 간식 휴식으로 바로 회복하세요.'
+          ? '집중력이 부족하면 리프레시 브레이크로 바로 회복하세요.'
           : `집중력이 ${formatCompactNumber(focusNeeded)} 더 필요합니다. 자동 회복을 잠깐 기다리세요.`,
     reward: `보상 ${formatCompactNumber(state.currentProject.rewardCash)}원 · 평판 ${formatCompactNumber(
       state.currentProject.rewardReputation,
@@ -131,10 +131,10 @@ function createProcessGoal(state: GameState): OnboardingGoal {
 function createOfficeGoal(state: GameState): OnboardingGoal {
   return {
     id: 'office-growth',
-    title: '작업실을 한 단계 키우세요',
-    description: '납품 3건을 채우면 차고 오두막이 골목 스튜디오로 넓어집니다.',
-    helper: '첫 팀원을 맞이한 뒤 납품 루프를 돌리면 확장 속도가 확실히 빨라집니다.',
-    reward: '작업실 2단계 확장',
+    title: '스튜디오를 한 단계 확장하세요',
+    description: '납품 3건을 채우면 1인 개발 데스크가 협업 스튜디오로 확장됩니다.',
+    helper: '첫 팀원을 맞이한 뒤 배포 루프를 돌리면 공간 확장 속도가 확실히 빨라집니다.',
+    reward: '협업 스튜디오 해금',
     progressText: `${formatCompactNumber(state.completedProjects)} / 3 납품`,
     progressPercent: clampPercent((state.completedProjects / 3) * 100),
   };
@@ -192,10 +192,10 @@ export function getOnboardingGuide(state: GameState): OnboardingGuide {
     },
     {
       id: 'office-growth',
-      label: '작업실 2단계',
+      label: '스튜디오 2단계',
       note:
         state.completedProjects >= 3
-          ? '완료 · 골목 스튜디오 입성'
+          ? '완료 · 협업 스튜디오 확장'
           : `${formatCompactNumber(state.completedProjects)} / 3 납품`,
       status: state.completedProjects >= 3 ? 'done' : activeIndex === 3 ? 'current' : 'locked',
     },
@@ -213,8 +213,8 @@ export function getOnboardingGuide(state: GameState): OnboardingGuide {
             : {
                 id: 'steady-loop',
                 title: '첫 루프가 안정적으로 굴러가고 있습니다',
-                description: '이제 납품과 고용을 반복하면서 더 큰 작업실 확장을 준비하면 됩니다.',
-                helper: '다음 단계에서는 업그레이드와 장기 목표를 붙이면 게임 흐름이 더 단단해집니다.',
+                description: '이제 납품과 고용을 반복하면서 더 큰 팀 운영과 시스템 확장을 준비하면 됩니다.',
+                helper: '다음 단계에서는 개발 시스템과 장기 목표를 붙이면 게임 흐름이 더 단단해집니다.',
                 reward: '기본 루프 안정화 완료',
                 progressText: `${formatCompactNumber(state.completedProjects)}건 납품`,
                 progressPercent: 100,

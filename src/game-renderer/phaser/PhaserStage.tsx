@@ -33,26 +33,26 @@ interface StageSceneHandle {
 }
 
 const workerLayouts: WorkerLayout[] = [
-  { x: 164, y: 186, scale: 1, fur: 0xf0c88d, accent: 0x7fbba3 },
-  { x: 132, y: 193, scale: 0.82, fur: 0xd9b071, accent: 0xf0ce71 },
-  { x: 202, y: 191, scale: 0.82, fur: 0xf2d9a8, accent: 0x8fc4ef },
-  { x: 236, y: 184, scale: 0.74, fur: 0xe4b46d, accent: 0xe59b63 },
+  { x: 166, y: 186, scale: 1, fur: 0xf0c88d, accent: 0x7fbba3 },
+  { x: 136, y: 198, scale: 0.82, fur: 0xd9b071, accent: 0xf0ce71 },
+  { x: 200, y: 198, scale: 0.82, fur: 0xf2d9a8, accent: 0x8fc4ef },
+  { x: 228, y: 184, scale: 0.74, fur: 0xe4b46d, accent: 0xe59b63 },
 ];
 
-const cropPatchPositions: Array<[number, number]> = [
-  [34, 186],
-  [68, 186],
-  [102, 186],
-  [34, 206],
-  [68, 206],
-  [102, 206],
+const workstationPositions: Array<[number, number]> = [
+  [52, 160],
+  [96, 160],
+  [52, 198],
+  [96, 198],
+  [254, 164],
+  [254, 202],
 ];
 
-const deliveryCratePositions: Array<[number, number]> = [
-  [220, 184],
-  [244, 180],
-  [268, 176],
-  [292, 172],
+const serverRackPositions: Array<[number, number]> = [
+  [310, 154],
+  [310, 176],
+  [310, 198],
+  [310, 220],
 ];
 
 function getViewportSize(host: HTMLDivElement) {
@@ -65,27 +65,27 @@ function getViewportSize(host: HTMLDivElement) {
 function getProcessPalette(processMode: ProcessMode) {
   if (processMode === 'waterfall') {
     return {
-      label: 'FLOW',
+      label: 'DOCS',
       subtitle: 'Stable release',
-      color: 0x8bbfe8,
-      textColor: '#234864',
+      color: 0x93c5fd,
+      textColor: '#1d4ed8',
     };
   }
 
   if (processMode === 'spiral') {
     return {
       label: 'LOOP',
-      subtitle: 'Risk review',
-      color: 0x8fcfa7,
-      textColor: '#204d2d',
+      subtitle: 'Review cycle',
+      color: 0x86efac,
+      textColor: '#166534',
     };
   }
 
   return {
-    label: 'AGILE',
+    label: 'SHIP',
     subtitle: 'Fast sprint',
-    color: 0xf2bf65,
-    textColor: '#6a421e',
+    color: 0xf8c15c,
+    textColor: '#7c4a03',
   };
 }
 
@@ -115,12 +115,10 @@ export function PhaserStage({ snapshot }: { snapshot: PhaserStageSnapshot }) {
       const phaserModule = await import('phaser');
       const Phaser = ('default' in phaserModule ? phaserModule.default : phaserModule) as PhaserType;
 
-      class DotFarmScene extends Phaser.Scene implements StageSceneHandle {
+      class DevStudioScene extends Phaser.Scene implements StageSceneHandle {
         private snapshot: PhaserStageSnapshot = snapshotRef.current;
         private root?: import('phaser').GameObjects.Container;
-        private cloudLeft?: import('phaser').GameObjects.Container;
-        private cloudRight?: import('phaser').GameObjects.Container;
-        private sunGlow?: import('phaser').GameObjects.Graphics;
+        private ambientGlow?: import('phaser').GameObjects.Graphics;
         private progressFill?: import('phaser').GameObjects.Rectangle;
         private progressLabel?: import('phaser').GameObjects.Text;
         private boardText?: import('phaser').GameObjects.Text;
@@ -129,24 +127,24 @@ export function PhaserStage({ snapshot }: { snapshot: PhaserStageSnapshot }) {
         private processBadgeText?: import('phaser').GameObjects.Text;
         private officeLevelTwoDecor?: import('phaser').GameObjects.Container;
         private officeLevelThreeDecor?: import('phaser').GameObjects.Container;
-        private snackCart?: import('phaser').GameObjects.Container;
-        private snackTreats: import('phaser').GameObjects.Graphics[] = [];
-        private showcaseShelf?: import('phaser').GameObjects.Container;
-        private showcaseAwards: import('phaser').GameObjects.Graphics[] = [];
-        private deskLamp?: import('phaser').GameObjects.Container;
-        private deskLampGlow?: import('phaser').GameObjects.Graphics;
+        private refreshStation?: import('phaser').GameObjects.Container;
+        private refreshLights: import('phaser').GameObjects.Graphics[] = [];
+        private releaseShelf?: import('phaser').GameObjects.Container;
+        private releaseBadges: import('phaser').GameObjects.Graphics[] = [];
+        private automationRig?: import('phaser').GameObjects.Container;
+        private automationGlow?: import('phaser').GameObjects.Graphics;
         private secondMonitor?: import('phaser').GameObjects.Graphics;
         private keyboardGlow?: import('phaser').GameObjects.Rectangle;
         private agileProps?: import('phaser').GameObjects.Container;
         private spiralProps?: import('phaser').GameObjects.Container;
         private waterfallProps?: import('phaser').GameObjects.Container;
-        private cropPatches: import('phaser').GameObjects.Container[] = [];
-        private deliveryCrates: import('phaser').GameObjects.Container[] = [];
+        private workstations: import('phaser').GameObjects.Container[] = [];
+        private serverRacks: import('phaser').GameObjects.Container[] = [];
         private workers: WorkerVisual[] = [];
         private elapsed = 0;
 
         constructor() {
-          super('dot-farm');
+          super('dev-studio');
         }
 
         private addRoundedRect(
@@ -221,7 +219,8 @@ export function PhaserStage({ snapshot }: { snapshot: PhaserStageSnapshot }) {
           );
           const body = this.add.container(0, 0, [
             this.addRoundedRect(-12, -8, 24, 16, 6, layout.fur, 0x855430, 2),
-            this.addRoundedRect(-3, -3, 6, 4, 2, layout.accent),
+            this.addRoundedRect(-6, -4, 12, 8, 3, layout.accent),
+            this.addRoundedRect(-3, -1, 6, 3, 2, 0x101827),
           ]);
           const head = this.add.container(0, 0, [
             this.addRoundedRect(-9, -18, 18, 15, 6, 0xf7d9aa, 0x855430, 2),
@@ -257,27 +256,32 @@ export function PhaserStage({ snapshot }: { snapshot: PhaserStageSnapshot }) {
           };
         }
 
-        private createCropPatch(x: number, y: number) {
+        private createWorkstation(x: number, y: number) {
           const root = this.add.container(x, y, [
-            this.addRoundedRect(-9, -5, 18, 10, 3, 0x8a5d2d, 0x6b4324, 2),
-            this.addCircle(0, -2, 3, 0x84b65d),
-            this.addCircle(-4, 0, 2, 0x6f9f49),
-            this.addCircle(4, 0, 2, 0x6f9f49),
+            this.addRoundedRect(-14, -10, 28, 8, 3, 0x334155, 0x0f172a, 2),
+            this.addRoundedRect(-10, -18, 20, 10, 3, 0xe2e8f0, 0x334155, 2),
+            this.addRoundedRect(-7, -15, 14, 6, 2, 0x7dd3fc, 0x0f172a, 1),
+            this.addRoundedRect(-3, -8, 6, 3, 1, 0x94a3b8),
+            this.addRoundedRect(-16, -2, 4, 14, 2, 0x475569),
+            this.addRoundedRect(12, -2, 4, 14, 2, 0x475569),
+            this.addRoundedRect(-7, 4, 14, 5, 2, 0xcbd5e1, 0x64748b, 1),
           ]);
 
           return root;
         }
 
-        private createDeliveryCrate(x: number, y: number) {
-          const box = this.addRoundedRect(-9, -7, 18, 14, 3, 0xc79561, 0x6b4324, 2);
-          const tape = this.addRoundedRect(-2, -7, 4, 14, 1, 0xf1ddb3);
-          const label = this.add.text(-6, -4, 'DEV', {
-            fontFamily: 'Pixelify Sans',
-            fontSize: '6px',
-            color: '#4c2d1a',
-          });
+        private createServerRack(x: number, y: number) {
+          const body = this.addRoundedRect(-10, -12, 20, 24, 3, 0x111827, 0x334155, 2);
+          const panel = this.addRoundedRect(-7, -9, 14, 18, 2, 0x1f2937, 0x475569, 1);
+          const lights = this.add.graphics();
+          lights.fillStyle(0x60a5fa, 1);
+          lights.fillRect(-4, -6, 8, 2);
+          lights.fillStyle(0x34d399, 1);
+          lights.fillRect(-4, -1, 8, 2);
+          lights.fillStyle(0xfbbf24, 1);
+          lights.fillRect(-4, 4, 8, 2);
 
-          return this.add.container(x, y, [box, tape, label]);
+          return this.add.container(x, y, [body, panel, lights]);
         }
 
         layout(width: number, height: number) {
@@ -320,30 +324,30 @@ export function PhaserStage({ snapshot }: { snapshot: PhaserStageSnapshot }) {
           this.workers.forEach((worker, index) => {
             worker.root.setVisible(index < nextSnapshot.workerCount);
           });
-          this.cropPatches.forEach((patch, index) => {
-            patch.setVisible(index < nextSnapshot.cropPatchCount);
+          this.workstations.forEach((workstation, index) => {
+            workstation.setVisible(index < nextSnapshot.workstationCount);
           });
-          this.deliveryCrates.forEach((crate, index) => {
-            crate.setVisible(index < nextSnapshot.deliveryCrateCount);
+          this.serverRacks.forEach((rack, index) => {
+            rack.setVisible(index < nextSnapshot.serverRackCount);
           });
 
           this.agileProps?.setVisible(nextSnapshot.processMode === 'agile');
           this.spiralProps?.setVisible(nextSnapshot.processMode === 'spiral');
           this.waterfallProps?.setVisible(nextSnapshot.processMode === 'waterfall');
 
-          this.snackCart?.setVisible(nextSnapshot.snackCartLevel > 0);
-          this.snackTreats.forEach((treat, index) => {
-            treat.setVisible(index < nextSnapshot.snackCartLevel);
+          this.refreshStation?.setVisible(nextSnapshot.refreshStationLevel > 0);
+          this.refreshLights.forEach((light, index) => {
+            light.setVisible(index < nextSnapshot.refreshStationLevel);
           });
-          this.showcaseShelf?.setVisible(nextSnapshot.showcaseWallLevel > 0);
-          this.showcaseAwards.forEach((award, index) => {
-            award.setVisible(index < nextSnapshot.showcaseWallLevel);
+          this.releaseShelf?.setVisible(nextSnapshot.releaseArchiveLevel > 0);
+          this.releaseBadges.forEach((badge, index) => {
+            badge.setVisible(index < nextSnapshot.releaseArchiveLevel);
           });
 
-          this.deskLamp?.setVisible(nextSnapshot.warmDeskLevel > 0);
-          this.deskLampGlow?.setVisible(nextSnapshot.warmDeskLevel > 0);
-          this.secondMonitor?.setVisible(nextSnapshot.warmDeskLevel > 1);
-          this.keyboardGlow?.setVisible(nextSnapshot.warmDeskLevel > 2);
+          this.automationRig?.setVisible(nextSnapshot.automationLevel > 0);
+          this.automationGlow?.setVisible(nextSnapshot.automationLevel > 0);
+          this.secondMonitor?.setVisible(nextSnapshot.automationLevel > 1);
+          this.keyboardGlow?.setVisible(nextSnapshot.automationLevel > 2);
         }
 
         create() {
@@ -351,286 +355,183 @@ export function PhaserStage({ snapshot }: { snapshot: PhaserStageSnapshot }) {
 
           this.root = this.add.container(0, 0);
 
-          const frame = this.addRoundedRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT, 12, 0xf3ddb0, 0x6a4324, 4);
-          const sky = this.addRoundedRect(8, 8, 344, 116, 8, 0x7ec4ee);
-          const haze = this.add.graphics();
-          haze.fillStyle(0xcfe8a1, 0.5);
-          haze.fillRect(8, 82, 344, 42);
+          const frame = this.addRoundedRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT, 12, 0xf8fafc, 0x1f2937, 4);
+          const wall = this.addRoundedRect(8, 8, 344, 120, 10, 0xf1f5f9, 0xcbd5e1, 2);
+          const floor = this.addRoundedRect(8, 126, 344, 106, 10, 0xe5e7eb, 0xd1d5db, 2);
+          const floorShadow = this.addRoundedRect(16, 168, 328, 56, 8, 0xd4d4d8, undefined, 0, 0.55);
+          const focusZone = this.addRoundedRect(120, 156, 124, 54, 8, 0xdbeafe, 0xbfdbfe, 2);
 
-          this.sunGlow = this.addCircle(294, 34, 26, 0xf7df8a, 0.22);
-          const sun = this.addCircle(294, 34, 14, 0xf3d575);
+          const wallGrid = this.add.graphics();
+          wallGrid.lineStyle(1, 0xe2e8f0, 0.8);
+          [36, 72, 108].forEach((y) => wallGrid.lineBetween(18, y, 342, y));
+          [80, 138, 196, 254].forEach((x) => wallGrid.lineBetween(x, 16, x, 118));
 
-          this.cloudLeft = this.add.container(0, 0, [
-            this.addRoundedRect(34, 28, 44, 18, 8, 0xf5fbff),
-            this.addRoundedRect(48, 18, 32, 18, 8, 0xf5fbff),
+          this.ambientGlow = this.addCircle(286, 38, 26, 0xdbeafe, 0.5);
+          const windowFrame = this.addRoundedRect(262, 18, 74, 50, 6, 0xffffff, 0xcbd5e1, 2);
+          const windowScene = this.add.graphics();
+          windowScene.fillStyle(0xe0f2fe, 1);
+          windowScene.fillRect(270, 26, 58, 34);
+          windowScene.fillStyle(0x94a3b8, 1);
+          windowScene.fillRect(276, 48, 8, 8);
+          windowScene.fillRect(290, 42, 8, 14);
+          windowScene.fillRect(304, 36, 8, 20);
+          windowScene.fillRect(318, 44, 6, 12);
+
+          const progressBoard = this.addRoundedRect(20, 18, 98, 62, 8, 0x0f172a, 0x334155, 2);
+          const progressBoardStrip = this.addRoundedRect(28, 28, 34, 8, 2, 0x1e293b);
+          const progressBoardAccent = this.addRoundedRect(28, 42, 82, 26, 4, 0x111827, 0x475569, 1);
+          this.boardText = this.add.text(41, 46, '0%', {
+            fontFamily: 'Pixelify Sans',
+            fontSize: '18px',
+            color: '#f8fafc',
+          });
+
+          const whiteboard = this.addRoundedRect(132, 76, 92, 44, 6, 0xffffff, 0xcbd5e1, 2);
+          const whiteboardNotes = this.add.container(0, 0, [
+            this.addRoundedRect(144, 86, 14, 8, 2, 0xfbbf24),
+            this.addRoundedRect(164, 84, 14, 8, 2, 0x86efac),
+            this.addRoundedRect(184, 88, 14, 8, 2, 0x93c5fd),
+            this.addRoundedRect(144, 98, 56, 4, 2, 0xe2e8f0),
+            this.addRoundedRect(144, 106, 42, 4, 2, 0xe2e8f0),
           ]);
-
-          this.cloudRight = this.add.container(0, 0, [
-            this.addRoundedRect(264, 58, 52, 18, 8, 0xf5fbff),
-            this.addRoundedRect(282, 48, 28, 18, 8, 0xf5fbff),
-          ]);
-
-          const mountainBack = this.addPolygon(
-            [
-              [8, 106],
-              [58, 64],
-              [92, 78],
-              [132, 50],
-              [184, 88],
-              [232, 58],
-              [282, 84],
-              [352, 46],
-              [352, 124],
-              [8, 124],
-            ],
-            0x7ca770,
-          );
-          const mountainFront = this.addPolygon(
-            [
-              [8, 120],
-              [64, 84],
-              [108, 98],
-              [168, 72],
-              [214, 104],
-              [258, 78],
-              [312, 102],
-              [352, 88],
-              [352, 128],
-              [8, 128],
-            ],
-            0x5f8b45,
-          );
-
-          const grass = this.add.graphics();
-          grass.fillStyle(0x7ea955, 1);
-          grass.fillRect(8, 124, 344, 50);
-
-          const dirt = this.add.graphics();
-          dirt.fillStyle(0x9d6a3c, 1);
-          dirt.fillRect(8, 174, 344, 58);
-
-          const path = this.addPolygon(
-            [
-              [154, 232],
-              [210, 232],
-              [220, 174],
-              [146, 174],
-            ],
-            0xc7965d,
-          );
-
-          const farmhouseShadow = this.addRoundedRect(198, 96, 110, 82, 6, 0x7b4928, undefined, 0, 0.25);
-          const farmhouseRoof = this.addPolygon(
-            [
-              [198, 108],
-              [252, 68],
-              [308, 108],
-            ],
-            0xb65f31,
-            0x73401f,
-            3,
-          );
-          const farmhouseBody = this.addRoundedRect(208, 104, 90, 62, 4, 0xe4c58c, 0x8b5a2f, 3);
-          const farmhouseDoor = this.addRoundedRect(242, 130, 18, 36, 4, 0x7c4a25, 0x5c3319, 2);
-          const farmhouseWindowLeft = this.addRoundedRect(218, 122, 18, 18, 4, 0x9fd6f0, 0x7b5228, 2);
-          const farmhouseWindowRight = this.addRoundedRect(270, 122, 18, 18, 4, 0x9fd6f0, 0x7b5228, 2);
 
           this.officeLevelTwoDecor = this.add.container(0, 0, [
-            this.addRoundedRect(298, 118, 28, 34, 4, 0xedcf91, 0x8b5a2f, 3),
-            this.addPolygon(
-              [
-                [296, 122],
-                [312, 108],
-                [328, 122],
-              ],
-              0xd57a43,
-              0x73401f,
-              3,
-            ),
-            this.addRoundedRect(304, 128, 14, 10, 3, 0x9fd6f0, 0x7b5228, 2),
-            this.addRoundedRect(306, 146, 18, 8, 3, 0x92b75b, 0x5c7d33, 2),
+            this.addRoundedRect(250, 76, 84, 50, 6, 0xffffff, 0xcbd5e1, 2),
+            this.addRoundedRect(270, 94, 44, 10, 5, 0x94a3b8, 0x475569, 2),
+            this.addCircle(266, 110, 6, 0xcbd5e1),
+            this.addCircle(319, 110, 6, 0xcbd5e1),
+            this.addRoundedRect(286, 82, 14, 8, 2, 0x0f172a, 0x334155, 2),
           ]);
 
           this.officeLevelThreeDecor = this.add.container(0, 0, [
-            this.addRoundedRect(226, 88, 54, 12, 4, 0x7c4a25, 0x5c3319, 2),
-            this.add.text(235, 90, 'DOG DEV', {
+            this.addRoundedRect(132, 122, 140, 18, 4, 0x111827, 0x334155, 2),
+            this.add.text(144, 126, 'RELEASE PIPELINE', {
               fontFamily: 'Pixelify Sans',
-              fontSize: '8px',
-              color: '#fff5db',
+              fontSize: '7px',
+              color: '#f8fafc',
             }),
-            this.addRoundedRect(248, 102, 10, 8, 2, 0x9fd6f0, 0x7b5228, 2),
+            this.addRoundedRect(244, 126, 18, 10, 2, 0x22c55e, 0x166534, 1),
           ]);
 
-          const fence = this.add.graphics();
-          fence.fillStyle(0x7a4a27, 1);
-          fence.fillRect(16, 168, 94, 6);
-          fence.fillRect(16, 184, 94, 6);
-          fence.fillStyle(0x9a683d, 1);
-          fence.fillRect(22, 164, 6, 32);
-          fence.fillRect(52, 164, 6, 32);
-          fence.fillRect(82, 164, 6, 32);
-
-          const cropBeds = this.add.graphics();
-          cropBeds.fillStyle(0x7f5329, 1);
-          cropBeds.fillRect(20, 176, 102, 42);
-          cropBeds.fillStyle(0x915f2d, 1);
-          [[22, 178], [56, 178], [90, 178], [22, 198], [56, 198], [90, 198]].forEach(([x, y]) => {
-            cropBeds.fillRect(x, y, 30, 18);
-          });
-
-          this.cropPatches = cropPatchPositions.map(([x, y]) => this.createCropPatch(x, y));
-
-          const workTable = this.add.graphics();
-          workTable.fillStyle(0x83512d, 1);
-          workTable.fillRoundedRect(128, 154, 72, 16, 4);
-          workTable.lineStyle(2, 0x5d381e, 1);
-          workTable.strokeRoundedRect(128, 154, 72, 16, 4);
-          workTable.fillStyle(0x5d381e, 1);
-          workTable.fillRect(136, 170, 6, 18);
-          workTable.fillRect(184, 170, 6, 18);
-
-          const laptop = this.addRoundedRect(144, 142, 24, 14, 4, 0x7fbba3, 0x4f7f69, 2);
-          const monitor = this.addRoundedRect(172, 140, 14, 16, 3, 0xa9d0e2, 0x4f7f69, 2);
-          this.secondMonitor = this.addRoundedRect(188, 141, 12, 14, 3, 0xa9d0e2, 0x4f7f69, 2);
-          this.keyboardGlow = this.add.rectangle(156, 158, 22, 3, 0xf7df8a).setAlpha(0.8);
-
-          this.deskLampGlow = this.addCircle(199, 146, 12, 0xf6df8d, 0.18);
-          this.deskLamp = this.add.container(0, 0, [
-            this.addRoundedRect(195, 156, 10, 3, 2, 0x8b5a2f),
-            this.addRoundedRect(198, 146, 3, 12, 2, 0x8b5a2f),
-            this.addPolygon(
-              [
-                [196, 146],
-                [206, 146],
-                [202, 138],
-              ],
-              0xf5d488,
-              0x8b5a2f,
-              2,
-            ),
+          const centralDesk = this.addRoundedRect(132, 164, 96, 18, 6, 0x334155, 0x0f172a, 2);
+          const deskLegLeft = this.addRoundedRect(140, 182, 5, 18, 2, 0x475569);
+          const deskLegRight = this.addRoundedRect(214, 182, 5, 18, 2, 0x475569);
+          const mainMonitor = this.addRoundedRect(150, 148, 24, 14, 3, 0xe2e8f0, 0x334155, 2);
+          const mainMonitorGlow = this.addRoundedRect(154, 151, 16, 8, 2, 0x7dd3fc, 0x0f172a, 1);
+          const laptop = this.addRoundedRect(180, 152, 18, 10, 3, 0xcbd5e1, 0x334155, 2);
+          this.secondMonitor = this.addRoundedRect(204, 149, 18, 13, 3, 0xe2e8f0, 0x334155, 2);
+          this.keyboardGlow = this.add.rectangle(180, 170, 28, 4, 0x38bdf8).setAlpha(0.7);
+          this.automationGlow = this.addCircle(226, 148, 10, 0x93c5fd, 0.3);
+          this.automationRig = this.add.container(0, 0, [
+            this.addRoundedRect(220, 154, 12, 8, 2, 0x1e293b, 0x334155, 2),
+            this.addRoundedRect(224, 146, 4, 8, 1, 0x38bdf8),
+            this.addRoundedRect(218, 162, 16, 3, 1, 0x64748b),
           ]);
 
-          const boardPost = this.add.graphics();
-          boardPost.fillStyle(0x734721, 1);
-          boardPost.fillRect(122, 126, 8, 44);
-          const boardSign = this.addRoundedRect(96, 110, 56, 22, 6, 0xe9c682, 0x8e5b31, 3);
-          this.boardText = this.add.text(109, 113, '0%', {
-            fontFamily: 'Pixelify Sans',
-            fontSize: '14px',
-            color: '#4c2d1a',
-          });
-
-          this.snackCart = this.add.container(0, 0, [
-            this.addRoundedRect(306, 176, 26, 12, 4, 0xd7a16c, 0x73401f, 2),
-            this.addRoundedRect(314, 166, 10, 10, 3, 0xf3dfbc, 0x73401f, 2),
-            this.addCircle(311, 190, 4, 0x73401f),
-            this.addCircle(327, 190, 4, 0x73401f),
+          this.refreshStation = this.add.container(0, 0, [
+            this.addRoundedRect(284, 188, 28, 24, 4, 0xffffff, 0xcbd5e1, 2),
+            this.addRoundedRect(290, 194, 16, 6, 2, 0xe2e8f0, 0x94a3b8, 1),
+            this.addRoundedRect(296, 180, 4, 10, 2, 0x94a3b8),
           ]);
-          this.snackTreats = [
-            this.addRoundedRect(309, 168, 4, 4, 1, 0xf08a68),
-            this.addRoundedRect(315, 168, 4, 4, 1, 0xf3d575),
-            this.addRoundedRect(321, 168, 4, 4, 1, 0x7fc8b1),
+          this.refreshLights = [
+            this.addCircle(292, 205, 3, 0xfbbf24),
+            this.addCircle(299, 205, 3, 0x86efac),
+            this.addCircle(306, 205, 3, 0x93c5fd),
           ];
-          this.snackCart.add(this.snackTreats);
+          this.refreshStation.add(this.refreshLights);
 
-          this.showcaseShelf = this.add.container(0, 0, [
-            this.addRoundedRect(220, 108, 42, 10, 3, 0x7c4a25, 0x5c3319, 2),
+          this.releaseShelf = this.add.container(0, 0, [
+            this.addRoundedRect(246, 74, 44, 10, 3, 0x334155, 0x1f2937, 2),
           ]);
-          this.showcaseAwards = [
-            this.addRoundedRect(225, 97, 8, 11, 2, 0xf0ce71, 0x8b5a2f, 2),
-            this.addRoundedRect(238, 95, 8, 13, 2, 0xa6d8ef, 0x5c7d91, 2),
-            this.addRoundedRect(251, 97, 8, 11, 2, 0x9ed17e, 0x5c7d33, 2),
+          this.releaseBadges = [
+            this.addRoundedRect(250, 62, 8, 10, 2, 0xfbbf24, 0x7c4a03, 2),
+            this.addRoundedRect(263, 58, 8, 14, 2, 0x93c5fd, 0x1d4ed8, 2),
+            this.addRoundedRect(276, 62, 8, 10, 2, 0x86efac, 0x166534, 2),
           ];
-          this.showcaseShelf.add(this.showcaseAwards);
+          this.releaseShelf.add(this.releaseBadges);
 
           this.agileProps = this.add.container(0, 0, [
-            this.addRoundedRect(138, 128, 8, 10, 2, 0xf2bf65),
-            this.addRoundedRect(148, 132, 8, 10, 2, 0xf39a66),
-            this.addRoundedRect(156, 126, 8, 10, 2, 0xf0ce71),
+            this.addRoundedRect(230, 96, 8, 8, 2, 0xfbbf24),
+            this.addRoundedRect(241, 90, 8, 8, 2, 0xfb7185),
+            this.addRoundedRect(252, 100, 8, 8, 2, 0xfcd34d),
           ]);
           this.spiralProps = this.add.container(0, 0, [
-            this.addCircle(146, 132, 5, 0x8fcfa7, 0.9),
-            this.addCircle(154, 124, 3, 0x7fbba3, 0.9),
-            this.addRoundedRect(145, 123, 12, 2, 1, 0x285441),
+            this.addCircle(238, 96, 5, 0x86efac, 0.95),
+            this.addCircle(247, 88, 3, 0x34d399, 0.95),
+            this.addRoundedRect(237, 87, 14, 2, 1, 0x166534),
           ]);
           this.waterfallProps = this.add.container(0, 0, [
-            this.addRoundedRect(139, 126, 12, 14, 2, 0xdfeffd, 0x7b98b6, 2),
-            this.addRoundedRect(150, 130, 12, 14, 2, 0xcde1f4, 0x7b98b6, 2),
+            this.addRoundedRect(232, 90, 12, 14, 2, 0xe0f2fe, 0x60a5fa, 2),
+            this.addRoundedRect(244, 94, 12, 14, 2, 0xbfdbfe, 0x60a5fa, 2),
           ]);
 
-          this.deliveryCrates = deliveryCratePositions.map(([x, y]) => this.createDeliveryCrate(x, y));
+          this.workstations = workstationPositions.map(([x, y]) => this.createWorkstation(x, y));
+          this.serverRacks = serverRackPositions.map(([x, y]) => this.createServerRack(x, y));
           this.workers = workerLayouts.map((layout) => this.createWorker(layout));
 
           const progressTrack = this.add
-            .rectangle(76, 28, PROGRESS_TRACK_WIDTH + 8, 12, 0xf7efdc)
-            .setStrokeStyle(2, 0x6b4324);
-          this.progressFill = this.add.rectangle(18, 28, 0, 6, 0xf2bf65).setOrigin(0, 0.5);
-          this.progressLabel = this.add.text(145, 21, '0%', {
+            .rectangle(86, 104, PROGRESS_TRACK_WIDTH + 8, 12, 0xffffff)
+            .setStrokeStyle(2, 0xcbd5e1);
+          this.progressFill = this.add.rectangle(27, 104, 0, 6, 0xf8c15c).setOrigin(0, 0.5);
+          this.progressLabel = this.add.text(156, 98, '0%', {
             fontFamily: 'Pixelify Sans',
             fontSize: '10px',
-            color: '#4c2d1a',
+            color: '#111827',
           });
 
-          this.processBadge = this.add.rectangle(309, 26, 58, 16, 0xf2bf65).setStrokeStyle(2, 0x734622);
-          this.processBadgeText = this.add.text(287, 20, 'AGILE', {
+          this.processBadge = this.add.rectangle(312, 104, 60, 16, 0xf8c15c).setStrokeStyle(2, 0xcbd5e1);
+          this.processBadgeText = this.add.text(289, 98, 'SHIP', {
             fontFamily: 'Pixelify Sans',
             fontSize: '10px',
-            color: '#6a421e',
+            color: '#7c4a03',
           });
 
-          const title = this.add.text(16, 14, 'DOT FARM BUILD', {
+          const title = this.add.text(20, 136, 'DEV STUDIO', {
             fontFamily: 'Pixelify Sans',
-            fontSize: '22px',
-            color: '#f0ce71',
-            stroke: '#734622',
-            strokeThickness: 3,
+            fontSize: '24px',
+            color: '#111827',
           });
-          this.subtitle = this.add.text(18, 40, '1 DOGS · Fast sprint', {
+          this.subtitle = this.add.text(20, 154, '1 DOGS · Fast sprint', {
             fontFamily: 'IBM Plex Sans KR',
             fontSize: '12px',
-            color: '#fff5db',
+            color: '#475569',
           });
 
           this.root.add([
             frame,
-            sky,
-            haze,
-            this.sunGlow,
-            sun,
-            this.cloudLeft,
-            this.cloudRight,
-            mountainBack,
-            mountainFront,
-            grass,
-            dirt,
-            path,
-            farmhouseShadow,
-            farmhouseRoof,
-            farmhouseBody,
-            farmhouseDoor,
-            farmhouseWindowLeft,
-            farmhouseWindowRight,
+            wall,
+            floor,
+            floorShadow,
+            focusZone,
+            wallGrid,
+            this.ambientGlow,
+            windowFrame,
+            windowScene,
+            progressBoard,
+            progressBoardStrip,
+            progressBoardAccent,
+            this.boardText,
+            whiteboard,
+            whiteboardNotes,
             this.officeLevelTwoDecor,
             this.officeLevelThreeDecor,
-            fence,
-            cropBeds,
-            ...this.cropPatches,
-            workTable,
+            centralDesk,
+            deskLegLeft,
+            deskLegRight,
+            mainMonitor,
+            mainMonitorGlow,
             laptop,
-            monitor,
             this.secondMonitor,
             this.keyboardGlow,
-            this.deskLampGlow,
-            this.deskLamp,
-            boardPost,
-            boardSign,
-            this.boardText,
-            this.snackCart,
-            this.showcaseShelf,
+            this.automationGlow,
+            this.automationRig,
+            this.refreshStation,
+            this.releaseShelf,
             this.agileProps,
             this.spiralProps,
             this.waterfallProps,
-            ...this.deliveryCrates,
+            ...this.workstations,
+            ...this.serverRacks,
             ...this.workers.map((worker) => worker.root),
             progressTrack,
             this.progressFill,
@@ -647,13 +548,9 @@ export function PhaserStage({ snapshot }: { snapshot: PhaserStageSnapshot }) {
         update(_: number, delta: number) {
           this.elapsed += delta / 1000;
 
-          if (!this.cloudLeft || !this.cloudRight || !this.sunGlow) {
-            return;
+          if (this.ambientGlow) {
+            this.ambientGlow.alpha = 0.4 + Math.sin(this.elapsed * 0.9) * 0.08;
           }
-
-          this.cloudLeft.x = Math.sin(this.elapsed * 0.35) * 8;
-          this.cloudRight.x = -Math.sin(this.elapsed * 0.3) * 6;
-          this.sunGlow.alpha = 0.2 + Math.sin(this.elapsed * 0.8) * 0.05;
 
           this.workers.forEach((worker, index) => {
             if (!worker.root.visible) {
@@ -667,20 +564,20 @@ export function PhaserStage({ snapshot }: { snapshot: PhaserStageSnapshot }) {
             worker.tail.rotation = -0.14 + Math.sin(phase * 2.3) * 0.18;
           });
 
-          this.cropPatches.forEach((patch, index) => {
-            if (!patch.visible) {
+          this.workstations.forEach((workstation, index) => {
+            if (!workstation.visible) {
               return;
             }
 
-            patch.y = cropPatchPositions[index][1] + Math.sin(this.elapsed * 1.1 + index * 0.5) * 0.4;
+            workstation.y = workstationPositions[index][1] + Math.sin(this.elapsed * 0.8 + index * 0.4) * 0.3;
           });
 
-          if (this.deskLampGlow?.visible) {
-            this.deskLampGlow.alpha = 0.16 + Math.sin(this.elapsed * 1.7) * 0.05;
+          if (this.automationGlow?.visible) {
+            this.automationGlow.alpha = 0.24 + Math.sin(this.elapsed * 1.6) * 0.06;
           }
 
-          if (this.snackCart?.visible) {
-            this.snackCart.y = Math.sin(this.elapsed * 1.2) * 0.5;
+          if (this.refreshStation?.visible) {
+            this.refreshStation.y = Math.sin(this.elapsed * 1.1) * 0.5;
           }
         }
       }
@@ -689,7 +586,7 @@ export function PhaserStage({ snapshot }: { snapshot: PhaserStageSnapshot }) {
         return;
       }
 
-      const scene = new DotFarmScene();
+      const scene = new DevStudioScene();
       sceneRef.current = scene;
       const viewport = getViewportSize(host);
 

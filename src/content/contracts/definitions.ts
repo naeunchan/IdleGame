@@ -28,8 +28,8 @@ export interface ContractProgress {
 export const contractDefinitions: ContractDefinition[] = [
   {
     id: 'delivery-sprint',
-    name: '동네 납품 보드',
-    summary: '작은 의뢰를 마감해 동네 입소문을 쌓습니다.',
+    name: '배포 처리량',
+    summary: '작은 작업을 연속으로 마감해 팀 처리량을 증명합니다.',
     unitLabel: '건',
     getMetricValue: (state) => state.completedProjects,
     getTargetValue: (tier) => 1 + Math.floor((tier - 1) / 2),
@@ -39,8 +39,8 @@ export const contractDefinitions: ContractDefinition[] = [
   },
   {
     id: 'cashflow-cleanup',
-    name: '운영 자금 정리',
-    summary: '새 현금을 벌어 작업실 현금 흐름을 안정화합니다.',
+    name: '현금 흐름 확보',
+    summary: '새 현금을 벌어 스튜디오 운영 예산을 안정화합니다.',
     unitLabel: '원',
     getMetricValue: (state) => state.stats.totalCashEarned,
     getTargetValue: (tier) => 70 + (tier - 1) * 32,
@@ -50,8 +50,8 @@ export const contractDefinitions: ContractDefinition[] = [
   },
   {
     id: 'reputation-pulse',
-    name: '입소문 모으기',
-    summary: '동네 평판을 쌓아 다음 의뢰가 더 잘 들어오게 만듭니다.',
+    name: '사용자 반응',
+    summary: '제품 평판을 쌓아 다음 의뢰가 더 잘 이어지게 만듭니다.',
     unitLabel: '평판',
     getMetricValue: (state) => state.stats.totalReputationEarned,
     getTargetValue: (tier) => 4 + (tier - 1) * 2,
@@ -72,8 +72,8 @@ export const contractDefinitions: ContractDefinition[] = [
   },
   {
     id: 'code-bundle',
-    name: '코드 꾸러미 납품',
-    summary: '코드를 꾸준히 모아 계약용 산출물을 채웁니다.',
+    name: '코드 누적',
+    summary: '코드를 꾸준히 쌓아 제품 산출물을 채웁니다.',
     unitLabel: 'code',
     getMetricValue: (state) => state.stats.totalCodeProduced,
     getTargetValue: (tier) => 100 + (tier - 1) * 38,
@@ -83,8 +83,8 @@ export const contractDefinitions: ContractDefinition[] = [
   },
   {
     id: 'snack-route',
-    name: '간식 동선 정리',
-    summary: '간식 휴식으로 집중 흐름을 관리해 작업실 리듬을 맞춥니다.',
+    name: '리프레시 루틴',
+    summary: '짧은 휴식으로 집중 흐름을 관리해 작업 리듬을 맞춥니다.',
     unitLabel: '회',
     getMetricValue: (state) => state.stats.totalSnacksPurchased,
     getTargetValue: (tier) => 1 + Math.floor((tier - 1) / 2),
@@ -146,7 +146,10 @@ export function getNextContractSerial(contractBoard: ContractState[] = []) {
   return contractBoard.reduce((maxSerial, contract) => Math.max(maxSerial, contract.serial + 1), 0);
 }
 
-export function getContractProgress(state: Pick<GameState, 'completedProjects' | 'stats'>, contract: ContractState): ContractProgress {
+export function getContractProgress(
+  state: Pick<GameState, 'completedProjects' | 'stats'>,
+  contract: ContractState,
+): ContractProgress {
   const definition = getContractDefinition(contract.definitionId);
   const currentValue = definition.getMetricValue(state);
   const progressValue = Math.max(0, Math.min(contract.targetValue, currentValue - contract.baselineValue));
